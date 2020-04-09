@@ -81,11 +81,9 @@ class SpendingController extends Controller
         $spending = collect([]);
         foreach ($ids as $id) {
             $sum = 0;
-            $stream = $serviceClient->searchStream($id, $query);
-            foreach ($stream->readAll() as $response) {
-                foreach ($response->getResults() as $row) {
-                    $sum += $row->getMetrics()->getCostMicrosUnwrapped();
-                }
+            $stream = $serviceClient->search($id, $query, ['pageSize' => 10000]);
+            foreach ($stream->iterateAllElements() as $row) {
+                $sum += $row->getMetrics()->getCostMicrosUnwrapped();
             }
             $spending->push($sum);
         }
