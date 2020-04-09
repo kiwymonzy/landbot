@@ -30,7 +30,7 @@ class SpendingController extends Controller
         $ids = explode("\n", str_replace('-', '', $account['custom_field']['cf_adwords_ids']));
         $date = $this->dateMapper($request->date);
 
-        $spending = $this->fetchAds($ids, $date)->map(function($item) { return $item / 1000000; });
+        $spending = $this->fetchSpending($ids, $date)->map(function($item) { return $item / 1000000; });
 
         $res = [
             'name' => $account['name'],
