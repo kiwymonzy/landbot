@@ -58,7 +58,7 @@ class CommandController extends Controller
 
         $ids = explode("\n", str_replace('-', '', $account['custom_field']['cf_adwords_ids']));
 
-        $this->updateAds($ids, 2);
+        // $this->updateAds($ids, 2);
 
         $res = [
             'name' => $account['name']
@@ -80,7 +80,7 @@ class CommandController extends Controller
 
         $ids = explode("\n", str_replace('-', '', $account['custom_field']['cf_adwords_ids']));
 
-        $this->updateAds($ids, 1);
+        // $this->updateAds($ids, 1);
 
         $res = [
             'name' => $account['name']
