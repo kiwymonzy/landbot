@@ -14,4 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('spending', 'SpendingController@spending');
+Route::post('spending', 'CommandController@spending');
+Route::post('pause', 'CommandController@pause');
+Route::post('enable', 'CommandController@enable');
