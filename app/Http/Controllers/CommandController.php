@@ -29,39 +29,16 @@ class CommandController extends Controller
      */
     public function spending(Request $request)
     {
-        // $account = $this->fetchAccount($request->phone);
-        $account = $this->fetchAccount('6285881233829');
+        $account = $this->fetchAccount($request->phone);
+        // $account = $this->fetchAccount('6285881233829');
 
-        $ids = explode("\n", str_replace('-', '', $account['custom_field']['cf_adwords_ids']));
-        $date = $this->dateMapper($request->date);
+        $ids = $this->parseAdWordsIds($account);
 
-        $spending = $this->fetchSpending($ids, $date)->map(function($item) { return $item / 1000000; });
+        $spending = $this->fetchSpending($ids, $request->date);
 
         $res = [
             'name' => $account['name'],
             'spending' => '$' . number_format($spending->sum(), 2),
-        ];
-
-        return $this->sendResponse('Success!', $res);
-    }
-
-    /**
-     * Pause all ads associated
-     *
-     * @param Request $request
-     * @return void
-     */
-    public function pause(Request $request)
-    {
-        // $account = $this->fetchAccount($request->phone);
-        $account = $this->fetchAccount('6285881233829');
-
-        $ids = explode("\n", str_replace('-', '', $account['custom_field']['cf_adwords_ids']));
-
-        // $this->updateAds($ids, 2);
-
-        $res = [
-            'name' => $account['name']
         ];
 
         return $this->sendResponse('Success!', $res);
@@ -75,12 +52,34 @@ class CommandController extends Controller
      */
     public function enable(Request $request)
     {
-        // $account = $this->fetchAccount($request->phone);
-        $account = $this->fetchAccount('6285881233829');
+        $account = $this->fetchAccount($request->phone);
+        // $account = $this->fetchAccount('6285881233829');
 
-        $ids = explode("\n", str_replace('-', '', $account['custom_field']['cf_adwords_ids']));
+        $ids = $this->parseAdWordsIds($account);
 
-        // $this->updateAds($ids, 1);
+        $this->updateAds($ids, 1);
+
+        $res = [
+            'name' => $account['name']
+        ];
+
+        return $this->sendResponse('Success!', $res);
+    }
+
+    /**
+     * Pause all ads associated
+     *
+     * @param Request $request
+     * @return void
+     */
+    public function pause(Request $request)
+    {
+        $account = $this->fetchAccount($request->phone);
+        // $account = $this->fetchAccount('6285881233829');
+
+        $ids = $this->parseAdWordsIds($account);
+
+        $this->updateAds($ids, 2);
 
         $res = [
             'name' => $account['name']
@@ -119,12 +118,14 @@ class CommandController extends Controller
      * Fetch spending of from AdWord IDs
      *
      * @param Array $ids
-     * @param String $date
+     * @param Integer $date
      * @return \Illuminate\Support\Collection
      */
-    public function fetchSpending(Array $ids, String $date)
+    public function fetchSpending(Array $ids, $dateIndex)
     {
         $serviceClient = $this->adsClient->getGoogleAdsServiceClient();
+
+        $date = $this->dateMapper($dateIndex);
         $query = 'SELECT campaign.name, metrics.cost_micros FROM campaign WHERE segments.date DURING ' . $date;
 
         $spending = collect([]);
@@ -136,7 +137,9 @@ class CommandController extends Controller
             }
             $spending->push($sum);
         }
-        return $spending;
+        return $spending->map(function ($item) {
+            return $item / 1000000;
+        });
     }
 
     public function updateAds(Array $accountIds, $status = 1)
@@ -160,7 +163,7 @@ class CommandController extends Controller
 
                 $operations->push($cOp);
             }
-            dd('stop before making changes');
+            // dd('stop before making changes');
             $campaignService = $this->adsClient->getCampaignServiceClient();
             $res = $campaignService->mutateCampaigns($id, $operations->toArray());
         }
@@ -202,5 +205,16 @@ class CommandController extends Controller
             default:
                 return CampaignStatus::PAUSED;
         }
+    }
+
+    /**
+     * Parse AdWords IDs from FreshSales accounts
+     *
+     * @param \Illuminate\Support\Collection $account
+     * @return array
+     */
+    public function parseAdWordsIds($account)
+    {
+        return explode("\n", str_replace('-', '', $account['custom_field']['cf_adwords_ids']));
     }
 }
