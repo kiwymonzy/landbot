@@ -126,9 +126,10 @@ class CommandController extends Controller
         $serviceClient = $this->adsClient->getGoogleAdsServiceClient();
 
         $date = $this->dateMapper($dateIndex);
-        $query = 'SELECT campaign.name, metrics.cost_micros FROM campaign WHERE segments.date DURING ' . $date;
+        $query = 'SELECT metrics.cost_micros FROM customer WHERE segments.date DURING ' . $date;
 
         $spending = collect([]);
+
         foreach ($ids as $id) {
             $sum = 0;
             $stream = $serviceClient->search($id, $query);
@@ -137,6 +138,7 @@ class CommandController extends Controller
             }
             $spending->push($sum);
         }
+
         return $spending->map(function ($item) {
             return $item / 1000000;
         });
