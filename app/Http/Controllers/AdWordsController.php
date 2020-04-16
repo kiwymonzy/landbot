@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Library\FreshSales\FreshSales;
 use App\Library\GoogleAds\GoogleAds;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V3\ResourceNames;
@@ -12,7 +11,7 @@ use Google\Ads\GoogleAds\V3\Services\CampaignOperation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class CommandController extends Controller
+class AdWordsController extends Controller
 {
     private $adsClient;
 
@@ -30,7 +29,6 @@ class CommandController extends Controller
     public function spending(Request $request)
     {
         $account = $this->fetchAccount($request->phone);
-        // $account = $this->fetchAccount('6285881233829');
 
         $ids = $this->parseAdWordsIds($account);
 
@@ -53,11 +51,10 @@ class CommandController extends Controller
     public function enable(Request $request)
     {
         $account = $this->fetchAccount($request->phone);
-        // $account = $this->fetchAccount('6285881233829');
 
         $ids = $this->parseAdWordsIds($account);
 
-        $this->updateAds($ids, 1);
+        $this->updateAds($ids, 2);
 
         $res = [
             'name' => $account['name']
@@ -75,7 +72,6 @@ class CommandController extends Controller
     public function pause(Request $request)
     {
         $account = $this->fetchAccount($request->phone);
-        // $account = $this->fetchAccount('6285881233829');
 
         $ids = $this->parseAdWordsIds($account);
 
@@ -86,32 +82,6 @@ class CommandController extends Controller
         ];
 
         return $this->sendResponse('Success!', $res);
-    }
-
-    /**
-     * Fetch account from FreshSales API
-     *
-     * @param String $channel
-     * @return \Illuminate\Support\Collection
-     */
-    public function fetchAccount(String $number)
-    {
-        // Create FreshSales client
-        $fs = new FreshSales();
-
-        // Search for number name in accounts
-        $accounts = $fs->account()->search($number);
-
-        // Find first exact match in number name custom field
-        foreach ($accounts as $acc) {
-            $match = $acc['more_match'];
-            if ($match['field_name'] == 'WA Number' && $match['field_value'] == $number) {
-                return $fs->account()->get($acc['id']);
-            }
-        }
-
-        // Throw error when none found
-        abort(404, 'Phone number not found');
     }
 
     /**
@@ -149,6 +119,8 @@ class CommandController extends Controller
         $serviceClient = $this->adsClient->getGoogleAdsServiceClient();
         $query = "SELECT campaign.id FROM campaign";
 
+        $campaignService = $this->adsClient->getCampaignServiceClient();
+        $accountIds = [$accountIds[0]];
         foreach ($accountIds as $id) {
             $stream = $serviceClient->search($id, $query);
             $operations = collect([]);
@@ -166,9 +138,9 @@ class CommandController extends Controller
                 $operations->push($cOp);
             }
             // dd('stop before making changes');
-            $campaignService = $this->adsClient->getCampaignServiceClient();
-            $res = $campaignService->mutateCampaigns($id, $operations->toArray());
+            $campaignService->mutateCampaigns($id, $operations->toArray());
         }
+        $campaignService->close();
     }
 
     /**
@@ -197,6 +169,12 @@ class CommandController extends Controller
         }
     }
 
+    /**
+     * Map status by index
+     *
+     * @param Integer $index
+     * @return String
+     */
     public function campaignStatusMapper($index)
     {
         switch ($index) {

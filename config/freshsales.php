@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // API Key
     'key' => env('FRESHSALES_KEY', ''),
 

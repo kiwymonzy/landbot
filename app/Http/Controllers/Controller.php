@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Library\FreshSales\FreshSales;
 use App\Library\Utils\ResponseUtil;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -41,5 +42,31 @@ class Controller extends BaseController
         $res = ResponseUtil::makeError($message);
 
         return response()->json($res, $code);
+    }
+
+    /**
+     * Fetch account from FreshSales API
+     *
+     * @param String $channel
+     * @return \Illuminate\Support\Collection
+     */
+    public function fetchAccount(String $number)
+    {
+        // Create FreshSales client
+        $fs = new FreshSales();
+
+        // Search for number name in accounts
+        $accounts = $fs->account()->search($number);
+
+        // Find first exact match in number name custom field
+        foreach ($accounts as $acc) {
+            $match = $acc['more_match'];
+            if ($match['field_name'] == 'WA Number' && $match['field_value'] == $number) {
+                return $fs->account()->get($acc['id']);
+            }
+        }
+
+        // Throw error when none found
+        abort(404, 'Phone number not found');
     }
 }
