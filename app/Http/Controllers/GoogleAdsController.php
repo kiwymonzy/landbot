@@ -85,14 +85,19 @@ class GoogleAdsController extends Controller
         return $this->sendResponse('Success!', $res);
     }
 
+    public function currentBudget(Request $request)
+    {
+
+    }
+
     /**
      * Fetch spending of from AdWord IDs
      *
-     * @param Array $ids
+     * @param Array $accountIds
      * @param Integer $date
      * @return \Illuminate\Support\Collection
      */
-    public function fetchSpending(Array $ids, $dateIndex)
+    public function fetchSpending(Array $accountIds, $dateIndex)
     {
         $serviceClient = $this->adsClient->getGoogleAdsServiceClient();
 
@@ -101,7 +106,7 @@ class GoogleAdsController extends Controller
 
         $spending = collect([]);
 
-        foreach ($ids as $id) {
+        foreach ($accountIds as $id) {
             $sum = 0;
             $stream = $serviceClient->search($id, $query);
             foreach ($stream->iterateAllElements() as $row) {
@@ -152,6 +157,28 @@ class GoogleAdsController extends Controller
             $campaignService->mutateCampaigns($id, $operations->toArray());
         }
         $campaignService->close();
+    }
+
+    public function fetchBudgets(Array $accountIds)
+    {
+        $serviceClient = $this->adsClient->getGoogleAdsServiceClient();
+
+        $query = 'SELECT campaign_budget.amount_micros FROM campaign';
+
+        $budgets = collect([]);
+
+        foreach ($accountIds as $id) {
+            $sum = 0;
+            $stream = $serviceClient->search($id, $query);
+            foreach ($stream->iterateAllElements() as $row) {
+                $sum += $row->getMetrics()->getCostMicrosUnwrapped();
+            }
+            $budgets->push($sum);
+        }
+
+        return $budgets->map(function ($item) {
+            return $item / 1000000;
+        });
     }
 
     /**

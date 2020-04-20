@@ -18,9 +18,11 @@ class WildJarController extends Controller
         $fsAccount = $this->fetchAccount($request->phone);
         $wjAccount = $this->parseWildJarId($fsAccount);
 
+        $wjAccounts = $this->fetchWJSubAccounts($wjAccount);
+
         $dates = $this->dateMapper($request->date);
         $calls = $this->client->summary()->filter([
-            'account' => $wjAccount,
+            'account' => $wjAccounts->join(','),
             'datefrom' => $dates['start'],
             'dateto' => $dates['end'],
         ])['summary'];
@@ -80,5 +82,22 @@ class WildJarController extends Controller
     public function parseWildJarId($account)
     {
         return $account['custom_field']['cf_wildjar_id'];
+    }
+
+    /**
+     * Parse WildJar sub accounts from ID
+     *
+     * @param \Illuminate\Support\Collection $account
+     * @return \Illuminate\Support\Collection
+     */
+    public function fetchWJSubAccounts($account)
+    {
+        $allAccounts = $this->client->account()->all();
+
+        $allAccountIds = $allAccounts->filter(function($q) use ($account) {
+            return $q['father'] == $account;
+        })->pluck('id');
+
+        return $allAccountIds->push($account);
     }
 }

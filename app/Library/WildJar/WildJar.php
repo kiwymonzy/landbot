@@ -2,6 +2,7 @@
 
 namespace App\Library\WildJar;
 
+use App\Library\WildJar\Helpers\Account;
 use App\Library\WildJar\Helpers\Call;
 use App\Library\WildJar\Helpers\Summary;
 use Illuminate\Support\Facades\Http;
@@ -14,6 +15,7 @@ class WildJar
     private $client;
     private $call;
     private $summary;
+    private $account;
 
     public function __construct()
     {
@@ -28,6 +30,7 @@ class WildJar
 
         $this->call = new Call($this);
         $this->summary = new Summary($this);
+        $this->account = new Account($this);
     }
 
     /**
@@ -40,14 +43,19 @@ class WildJar
         return $this->call;
     }
 
-    /**
-     * Return Summary object
-     *
-     * @return \App\Library\WildJar\Helpers\Summary
-     */
     public function summary()
     {
         return $this->summary;
+    }
+
+    /**
+     * Return Account object
+     *
+     * @return \App\Library\WildJar\Helpers\Account
+     */
+    public function account()
+    {
+        return $this->account;
     }
 
     public function authenticate()
