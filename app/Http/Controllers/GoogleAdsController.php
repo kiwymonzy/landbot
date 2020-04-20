@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Library\GoogleAds\GoogleAds;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V3\ResourceNames;
+use Google\Ads\GoogleAds\V3\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\Ads\GoogleAds\V3\Enums\CampaignStatusEnum\CampaignStatus;
 use Google\Ads\GoogleAds\V3\Resources\Campaign;
 use Google\Ads\GoogleAds\V3\Services\CampaignOperation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class AdWordsController extends Controller
+class GoogleAdsController extends Controller
 {
     private $adsClient;
 
@@ -114,17 +115,28 @@ class AdWordsController extends Controller
         });
     }
 
+    /**
+     * Update status of all campaigns in accounts
+     *
+     * TODO: Find way to mutate video ads
+     * TODO: Find way to retrieve smart campaigns
+     * @param Array $accountIds
+     * @param integer $status
+     * @return void
+     */
     public function updateAds(Array $accountIds, $status = 1)
     {
         $serviceClient = $this->adsClient->getGoogleAdsServiceClient();
-        $query = "SELECT campaign.id FROM campaign";
+        $query = "SELECT campaign.id, campaign.advertising_channel_type FROM campaign";
 
         $campaignService = $this->adsClient->getCampaignServiceClient();
-        $accountIds = [$accountIds[0]];
+
         foreach ($accountIds as $id) {
             $stream = $serviceClient->search($id, $query);
             $operations = collect([]);
             foreach ($stream->iterateAllElements() as $row) {
+                if(!$this->passFilter($row)) continue;
+
                 $cID = $row->getCampaign()->getIdUnwrapped();
 
                 $c = new Campaign();
@@ -137,7 +149,6 @@ class AdWordsController extends Controller
 
                 $operations->push($cOp);
             }
-            // dd('stop before making changes');
             $campaignService->mutateCampaigns($id, $operations->toArray());
         }
         $campaignService->close();
@@ -196,5 +207,32 @@ class AdWordsController extends Controller
     public function parseAdWordsIds($account)
     {
         return explode("\n", str_replace('-', '', $account['custom_field']['cf_adwords_ids']));
+    }
+
+    /**
+     * Filter campaigns based on blacklist
+     *
+     * @param mixed $row
+     * @return boolean
+     */
+    public function passFilter($row)
+    {
+        /**
+         * Campaign Type Enum
+         *
+         * 0: UNSPECIFIED
+         * 1: UNKNOWN
+         * 2: SEARCH
+         * 3: DISPLAY
+         * 4: SHOPPING
+         * 5: HOTEL
+         * 6: VIDEO
+         */
+        $blackListCampaignTypes = collect([6]);
+        $campaignType = $row->getCampaign()->getAdvertisingChannelType();
+        if ($blackListCampaignTypes->contains($campaignType)) {
+            return false;
+        }
+        return true;
     }
 }

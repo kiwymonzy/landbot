@@ -14,10 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// AdWords Commands
-Route::post('spending', 'AdWordsController@spending');
-Route::post('pause', 'AdWordsController@pause');
-Route::post('enable', 'AdWordsController@enable');
+// GoogleAds Commands
+Route::post('spending', 'GoogleAdsController@spending');
+Route::post('pause', 'GoogleAdsController@pause');
+Route::post('enable', 'GoogleAdsController@enable');
 
 // WildJar Commands
 Route::post('calls', 'WildJarController@calls');
