@@ -39,8 +39,8 @@ class WildJarController extends Controller
     {
         switch ($index) {
             case 1:
-                $start = Carbon::today();
-                $end = Carbon::today();
+                $start = Carbon::today()->startOfDay();
+                $end = Carbon::today()->endOfDay();
                 break;
             case 2:
                 $start = Carbon::today()->subDay()->startOfDay();
@@ -63,8 +63,8 @@ class WildJarController extends Controller
                 $end = Carbon::today()->subMonth()->endOfMonth();
                 break;
             default:
-                $start = Carbon::today();
-                $end = Carbon::today();
+                $start = Carbon::today()->startOfDay();
+                $end = Carbon::today()->endOfDay();
                 break;
         }
         return [
