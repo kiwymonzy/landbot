@@ -19,11 +19,11 @@ class Controller extends BaseController
      * Send success response
      *
      * @param string $message
-     * @param array $data
+     * @param mixed $data
      * @param integer $code
      * @return string
      */
-    public function sendResponse(string $message, array $data, $code = 200)
+    public function sendResponse(string $message, $data, $code = 200)
     {
         $res = ResponseUtil::makeResponse($message, $data);
 
@@ -50,7 +50,7 @@ class Controller extends BaseController
      * @param String $channel
      * @return \Illuminate\Support\Collection
      */
-    public function fetchAccount(String $number)
+    public function fetchAccount(String $number, $account_params = [])
     {
         // Create FreshSales client
         $fs = new FreshSales();
@@ -62,7 +62,7 @@ class Controller extends BaseController
         foreach ($accounts as $acc) {
             $match = $acc['more_match'];
             if ($match['field_name'] == 'WA Number' && $match['field_value'] == $number) {
-                return $fs->account()->get($acc['id']);
+                return $fs->account()->get($acc['id'], $account_params);
             }
         }
 

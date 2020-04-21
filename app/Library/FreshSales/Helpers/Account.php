@@ -13,13 +13,13 @@ class Account
         $this->client = $client;
     }
 
-    public function search($query)
+    public function search($query, $options = [])
     {
-        $params = [
+        $params = array_merge([
             'q' => $query,
             'include' => 'sales_account',
             'per_page' => 100,
-        ];
+        ], $options);
 
         return collect($this->client->get('search', $params))->recursive();
     }
@@ -30,8 +30,8 @@ class Account
      * @param string $id
      * @return \Illuminate\Support\Collection
      */
-    public function get($id)
+    public function get($id, $params = [])
     {
-        return collect($this->client->get("sales_accounts/$id")['sales_account'])->recursive();
+        return collect($this->client->get("sales_accounts/$id", $params))->recursive();
     }
 }

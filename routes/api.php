@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// FreshSales Commands
+Route::post('account', 'FreshSalesController@account');
+
 // GoogleAds Commands
 Route::post('spending', 'GoogleAdsController@spending');
 Route::post('pause', 'GoogleAdsController@pause');

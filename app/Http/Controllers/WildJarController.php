@@ -15,7 +15,7 @@ class WildJarController extends Controller
 
     public function calls(Request $request)
     {
-        $fsAccount = $this->fetchAccount($request->phone);
+        $fsAccount = $this->fetchAccount($request->phone)['sales_account'];
         $wjAccount = $this->parseWildJarId($fsAccount);
 
         $wjAccounts = $this->fetchWJSubAccounts($wjAccount);

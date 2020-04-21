@@ -29,7 +29,7 @@ class GoogleAdsController extends Controller
      */
     public function spending(Request $request)
     {
-        $account = $this->fetchAccount($request->phone);
+        $account = $this->fetchAccount($request->phone)['sales_account'];
 
         $ids = $this->parseAdWordsIds($account);
 
@@ -51,7 +51,7 @@ class GoogleAdsController extends Controller
      */
     public function enable(Request $request)
     {
-        $account = $this->fetchAccount($request->phone);
+        $account = $this->fetchAccount($request->phone)['sales_account'];
 
         $ids = $this->parseAdWordsIds($account);
 
@@ -72,7 +72,7 @@ class GoogleAdsController extends Controller
      */
     public function pause(Request $request)
     {
-        $account = $this->fetchAccount($request->phone);
+        $account = $this->fetchAccount($request->phone)['sales_account'];
 
         $ids = $this->parseAdWordsIds($account);
 
