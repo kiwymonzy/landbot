@@ -21,6 +21,12 @@ Route::post('account', 'FreshSalesController@account');
 Route::post('spending', 'GoogleAdsController@spending');
 Route::post('pause', 'GoogleAdsController@pause');
 Route::post('enable', 'GoogleAdsController@enable');
+Route::post('billing', 'GoogleAds\BillingController@billing');
+Route::post('accounts', 'GoogleAds\AccountController@accounts');
 
 // WildJar Commands
 Route::post('calls', 'WildJarController@calls');
+
+Route::group(['prefix' => 'fs'], function () {
+
+});
