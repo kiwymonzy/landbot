@@ -25,6 +25,7 @@ class WildJarController extends Controller
             'account' => $wjAccounts->join(','),
             'datefrom' => $dates['start'],
             'dateto' => $dates['end'],
+            'timezone' => 'Australia/Sydney',
         ])['summary'];
 
         $res = [
@@ -37,34 +38,36 @@ class WildJarController extends Controller
 
     public function dateMapper($index)
     {
+        $start_base = Carbon::today()->setTimezone('AEST');
+        $end_base = Carbon::today()->setTimezone('AEST');
         switch ($index) {
             case 1:
-                $start = Carbon::today()->startOfDay();
-                $end = Carbon::today()->endOfDay();
+                $start = $start_base->startOfDay();
+                $end = $end_base->endOfDay();
                 break;
             case 2:
-                $start = Carbon::today()->subDay()->startOfDay();
-                $end = Carbon::today()->subDay()->endOfDay();
+                $start = $start_base->subDay()->startOfDay();
+                $end = $end_base->subDay()->endOfDay();
                 break;
             case 3:
-                $start = Carbon::today()->startofWeek();
-                $end = Carbon::today()->endofWeek();
+                $start = $start_base->startofWeek();
+                $end = $end_base->endofWeek();
                 break;
             case 4:
-                $start = Carbon::today()->subWeek()->startOfWeek();
-                $end = Carbon::today()->subWeek()->endOfWeek();
+                $start = $start_base->subWeek()->startOfWeek();
+                $end = $end_base->subWeek()->endOfWeek();
                 break;
             case 5:
-                $start = Carbon::today()->startOfMonth();
-                $end = Carbon::today()->endOfMonth();
+                $start = $start_base->startOfMonth();
+                $end = $end_base->endOfMonth();
                 break;
             case 6:
-                $start = Carbon::today()->subMonth()->startOfMonth();
-                $end = Carbon::today()->subMonth()->endOfMonth();
+                $start = $start_base->subMonth()->startOfMonth();
+                $end = $end_base->subMonth()->endOfMonth();
                 break;
             default:
-                $start = Carbon::today()->startOfDay();
-                $end = Carbon::today()->endOfDay();
+                $start = $start_base->startOfDay();
+                $end = $end_base->endOfDay();
                 break;
         }
         return [
