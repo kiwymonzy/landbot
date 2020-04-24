@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Library\WildJar\WildJar;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class WildJarController extends Controller
 {
@@ -21,25 +22,28 @@ class WildJarController extends Controller
         $wjAccounts = $this->fetchWJSubAccounts($wjAccount);
 
         $dates = $this->dateMapper($request->date);
-        $calls = $this->client->summary()->filter([
+        $data = [
             'account' => $wjAccounts->join(','),
             'datefrom' => $dates['start'],
             'dateto' => $dates['end'],
             'timezone' => 'Australia/Sydney',
-        ])['summary'];
+        ];
+        $calls = $this->client->summary()->filter($data)['summary'];
 
         $res = [
             'answered' => intval($calls['answeredTot']),
             'missed' => $calls['missedTot'] + $calls['abandonedTot'],
         ];
 
+        Log::info("Calls request was made", ['req' => $data, 'res' => $res]);
+
         return $this->sendResponse('Success!', $res);
     }
 
     public function dateMapper($index)
     {
-        $start_base = Carbon::today()->setTimezone('AEST');
-        $end_base = Carbon::today()->setTimezone('AEST');
+        $start_base = Carbon::today();
+        $end_base = Carbon::today();
         switch ($index) {
             case 1:
                 $start = $start_base->startOfDay();
