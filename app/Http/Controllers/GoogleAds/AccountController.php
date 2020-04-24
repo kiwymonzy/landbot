@@ -21,7 +21,7 @@ class AccountController extends BaseController
     {
         $serviceClient = $this->adsClient()->getGoogleAdsServiceClient();
 
-        $query = 'SELECT customer.descriptive_name FROM customer';
+        $query = 'SELECT customer.descriptive_name FROM customer ORDER BY customer.descriptive_name';
 
         $names = collect([]);
 

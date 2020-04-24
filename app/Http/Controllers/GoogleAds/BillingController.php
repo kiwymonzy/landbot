@@ -12,29 +12,30 @@ class BillingController extends BaseController
         $account = $this->fetchAccount($request->phone)['sales_account'];
         $year = $request->year;
         $month = $request->month;
+        $accountIndex = $request->account;
 
         $ids = $this->parseAdWordsIds($account, $year, $month);
 
-        $urls = $this->fetchBilling($ids, $month, $year);
+        $urls = $this->fetchBilling($ids, $month, $year, $accountIndex);
     }
 
-    public function fetchBilling(Array $accountIds, $monthIndex, $yearIndex)
+    public function fetchBilling(Array $accountIds, $monthIndex, $yearIndex, $accountIndex)
     {
         $billingSetups = $this->fetchBillingSetups($accountIds);
         $month = $this->monthMapper($monthIndex);
         $year = $this->yearMapper($yearIndex);
+        $account = $accountIndex - 1;
 
         $serviceClient = $this->adsClient()->getInvoiceServiceClient();
 
-        for ($i = 0; $i < count($accountIds); $i++) {
-            $response = $serviceClient->listInvoices(
-                $accountIds[$i],
-                $billingSetups[$i],
-                $year,
-                $month,
-            );
-            dd($response);
-        }
+        $response = $serviceClient->listInvoices(
+            $accountIds[$account],
+            $billingSetups[$account],
+            $year,
+            $month,
+        );
+
+        dd($response);
     }
 
     public function fetchBillingSetups(Array $accountIds)
