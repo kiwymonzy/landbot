@@ -18,9 +18,9 @@ use Illuminate\Support\Facades\Route;
 Route::post('account', 'FreshSalesController@account');
 
 // GoogleAds Commands
-Route::post('spending', 'GoogleAdsController@spending');
-Route::post('pause', 'GoogleAdsController@pause');
-Route::post('enable', 'GoogleAdsController@enable');
+Route::post('spending', 'GoogleAds\SpendingController@spending');
+Route::post('pause', 'GoogleAds\StatusController@pause');
+Route::post('enable', 'GoogleAds\StatusController@enable');
 Route::post('billing', 'GoogleAds\BillingController@billing');
 Route::post('accounts', 'GoogleAds\AccountController@accounts');
 
