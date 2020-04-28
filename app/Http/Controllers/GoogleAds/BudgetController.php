@@ -6,7 +6,7 @@ class BudgetController extends BaseController
 {
     public function fetchBudgets(array $accountIds)
     {
-        $serviceClient = $this->adsClient->getGoogleAdsServiceClient();
+        $serviceClient = $this->adsClient()->getGoogleAdsServiceClient();
 
         $query = 'SELECT campaign_budget.amount_micros FROM campaign';
 

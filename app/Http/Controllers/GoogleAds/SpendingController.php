@@ -37,7 +37,7 @@ class SpendingController extends BaseController
      */
     public function fetchSpending(array $accountIds, $dateIndex)
     {
-        $serviceClient = $this->adsClient->getGoogleAdsServiceClient();
+        $serviceClient = $this->adsClient()->getGoogleAdsServiceClient();
 
         $date = $this->dateMapper($dateIndex);
         $query = 'SELECT metrics.cost_micros FROM customer WHERE segments.date DURING ' . $date;

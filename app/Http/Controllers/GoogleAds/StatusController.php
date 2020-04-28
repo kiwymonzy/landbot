@@ -64,10 +64,10 @@ class StatusController extends BaseController
      */
     public function updateAds(array $accountIds, $status = 1)
     {
-        $serviceClient = $this->adsClient->getGoogleAdsServiceClient();
+        $serviceClient = $this->adsClient()->getGoogleAdsServiceClient();
         $query = "SELECT campaign.id, campaign.advertising_channel_type FROM campaign";
 
-        $campaignService = $this->adsClient->getCampaignServiceClient();
+        $campaignService = $this->adsClient()->getCampaignServiceClient();
 
         foreach ($accountIds as $id) {
             $stream = $serviceClient->search($id, $query);
