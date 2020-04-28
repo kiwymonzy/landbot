@@ -22,7 +22,7 @@ class SpendingController extends BaseController
 
         $res = [
             'name' => $account['name'],
-            'spending' => $spending->sum(),
+            'spending' => (float) sprintf("%.2f", $spending->sum()),
         ];
 
         return $this->sendResponse('Success!', $res);
