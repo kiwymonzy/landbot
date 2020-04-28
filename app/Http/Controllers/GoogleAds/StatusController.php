@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\GoogleAds;
 
-use App\Http\Controllers\Controller;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V3\ResourceNames;
 use Google\Ads\GoogleAds\V3\Enums\CampaignStatusEnum\CampaignStatus;
@@ -10,7 +9,7 @@ use Google\Ads\GoogleAds\V3\Resources\Campaign;
 use Google\Ads\GoogleAds\V3\Services\CampaignOperation;
 use Illuminate\Http\Request;
 
-class StatusController extends Controller
+class StatusController extends BaseController
 {
     /**
      * Enable all ads associated

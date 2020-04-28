@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers\GoogleAds;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-class BudgetController extends Controller
+class BudgetController extends BaseController
 {
     public function fetchBudgets(array $accountIds)
     {

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\GoogleAds;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class SpendingController extends Controller
+class SpendingController extends BaseController
 {
     /**
      * Get current spending
