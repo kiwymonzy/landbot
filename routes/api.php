@@ -18,11 +18,13 @@ use Illuminate\Support\Facades\Route;
 Route::post('account', 'FreshSalesController@account');
 
 // GoogleAds Commands
-Route::post('spending', 'GoogleAds\SpendingController@spending');
-Route::post('pause', 'GoogleAds\StatusController@pause');
-Route::post('enable', 'GoogleAds\StatusController@enable');
-Route::post('billing', 'GoogleAds\BillingController@billing');
-Route::post('accounts', 'GoogleAds\AccountController@accounts');
+Route::post('spending',       'GoogleAds\SpendingController@spending');
+Route::post('pause',          'GoogleAds\StatusController@pause');
+Route::post('enable',         'GoogleAds\StatusController@enable');
+Route::post('billing',        'GoogleAds\BillingController@billing');
+Route::post('accounts',       'GoogleAds\AccountController@accounts');
+Route::post('current-budget', 'GoogleAds\BudgetController@currentBudget');
+Route::post('change-budget',  'GoogleAds\BudgetController@changeBudget');
 
 // WildJar Commands
 Route::post('calls', 'WildJarController@calls');

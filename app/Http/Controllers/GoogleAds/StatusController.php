@@ -9,7 +9,7 @@ use Google\Ads\GoogleAds\V3\Resources\Campaign;
 use Google\Ads\GoogleAds\V3\Services\CampaignOperation;
 use Illuminate\Http\Request;
 
-class StatusController extends BaseController
+class StatusController extends MutationController
 {
     /**
      * Enable all ads associated
