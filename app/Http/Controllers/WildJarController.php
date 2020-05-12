@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Library\WildJar\WildJar;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class WildJarController extends Controller
 {
@@ -34,8 +33,6 @@ class WildJarController extends Controller
             'answered' => intval($calls['answeredTot']),
             'missed' => $calls['missedTot'] + $calls['abandonedTot'],
         ];
-
-        Log::info("Calls request was made", ['req' => $data, 'res' => $res]);
 
         return $this->sendResponse('Success!', $res);
     }

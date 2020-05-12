@@ -4,7 +4,7 @@ namespace App\Http\Controllers\GoogleAds;
 
 use App\Http\Controllers\Controller;
 use App\Library\GoogleAds\GoogleAds;
-use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class BaseController extends Controller
 {
@@ -28,7 +28,8 @@ class BaseController extends Controller
      */
     public function parseAdWordsIds($account)
     {
-        return explode("\n", str_replace('-', '', $account['custom_field']['cf_adwords_ids']));
+        $string = $account['custom_field']['cf_adwords_ids'];
+        return Str::of($string)->replace('-', '')->explode("\n");
     }
 
     /**
@@ -55,32 +56,5 @@ class BaseController extends Controller
             default:
                 return 'TODAY';
         }
-    }
-
-    /**
-     * Filter campaigns based on blacklist
-     *
-     * @param mixed $row
-     * @return boolean
-     */
-    public function passFilter($row)
-    {
-        /**
-         * Campaign Type Enum
-         *
-         * 0: UNSPECIFIED
-         * 1: UNKNOWN
-         * 2: SEARCH
-         * 3: DISPLAY
-         * 4: SHOPPING
-         * 5: HOTEL
-         * 6: VIDEO
-         */
-        $blackListCampaignTypes = collect([6]);
-        $campaignType = $row->getCampaign()->getAdvertisingChannelType();
-        if ($blackListCampaignTypes->contains($campaignType)) {
-            return false;
-        }
-        return true;
     }
 }

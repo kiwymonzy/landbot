@@ -67,6 +67,11 @@ class Controller extends BaseController
         }
 
         // Throw error when none found
+        Log::error('Phone number not found', [
+            'number' => $number,
+            'search_results' => $accounts
+        ]);
+
         abort(404, 'Phone number not found');
     }
 }
