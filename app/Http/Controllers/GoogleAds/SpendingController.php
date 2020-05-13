@@ -31,11 +31,11 @@ class SpendingController extends BaseController
     /**
      * Fetch spending of from AdWord IDs
      *
-     * @param Array $accountIds
+     * @param Array|Collection $accountIds
      * @param Integer $date
      * @return \Illuminate\Support\Collection
      */
-    public function fetchSpending(array $accountIds, $dateIndex)
+    public function fetchSpending($accountIds, $dateIndex)
     {
         $serviceClient = $this->adsClient()->getGoogleAdsServiceClient();
 
