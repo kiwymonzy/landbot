@@ -17,7 +17,7 @@ class AccountController extends BaseController
         return $this->sendResponse('', $accounts);
     }
 
-    public function fetchAdsAccounts(Array $accountIds)
+    public function fetchAdsAccounts($accountIds)
     {
         $serviceClient = $this->adsClient()->getGoogleAdsServiceClient();
 

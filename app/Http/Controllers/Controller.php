@@ -21,7 +21,7 @@ class Controller extends BaseController
      * @param string $message
      * @param mixed $data
      * @param integer $code
-     * @return string
+     * @return \Illuminate\Http\JsonResponse
      */
     public function sendResponse(string $message, $data, $code = 200)
     {
@@ -35,7 +35,7 @@ class Controller extends BaseController
      *
      * @param string $message
      * @param integer $code
-     * @return void
+     * @return \Illuminate\Http\JsonResponse
      */
     public function sendError(string $message, $code = 400)
     {

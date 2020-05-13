@@ -19,12 +19,13 @@ Route::post('account', 'FreshSalesController@account');
 
 // GoogleAds Commands
 Route::post('spending',       'GoogleAds\SpendingController@spending');
-Route::post('pause',          'GoogleAds\StatusController@pause');
-Route::post('enable',         'GoogleAds\StatusController@enable');
 Route::post('billing',        'GoogleAds\BillingController@billing');
 Route::post('accounts',       'GoogleAds\AccountController@accounts');
-Route::post('current-budget', 'GoogleAds\BudgetController@currentBudget');
+Route::post('active-campaigns', 'GoogleAds\MutationController@activeCampaigns');
+// Mutations
 Route::post('change-budget',  'GoogleAds\BudgetController@changeBudget');
+Route::post('pause',          'GoogleAds\StatusController@pause');
+// Route::post('enable',         'GoogleAds\StatusController@enable');
 
 // WildJar Commands
 Route::post('calls', 'WildJarController@calls');

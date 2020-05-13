@@ -19,7 +19,7 @@ class BillingController extends BaseController
         $urls = $this->fetchBilling($ids, $month, $year, $accountIndex);
     }
 
-    public function fetchBilling(Array $accountIds, $monthIndex, $yearIndex, $accountIndex)
+    public function fetchBilling($accountIds, $monthIndex, $yearIndex, $accountIndex)
     {
         $billingSetups = $this->fetchBillingSetups($accountIds);
         $month = $this->monthMapper($monthIndex);
@@ -38,7 +38,7 @@ class BillingController extends BaseController
         dd($response);
     }
 
-    public function fetchBillingSetups(Array $accountIds)
+    public function fetchBillingSetups($accountIds)
     {
         $serviceClient = $this->adsClient()->getGoogleAdsServiceClient();
 

@@ -24,7 +24,7 @@ class BaseController extends Controller
      * Parse AdWords IDs from FreshSales accounts
      *
      * @param \Illuminate\Support\Collection $account
-     * @return array
+     * @return \Illuminate\Support\Collection
      */
     public function parseAdWordsIds($account)
     {

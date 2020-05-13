@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GoogleAds;
 
+use App\Jobs\MutateCampaignBudget;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V3\ResourceNames;
 use Google\Ads\GoogleAds\V3\Enums\CampaignStatusEnum\CampaignStatus;
@@ -42,15 +43,27 @@ class StatusController extends MutationController
     {
         $account = $this->fetchAccount($request->phone)['sales_account'];
 
-        $ids = $this->parseAdWordsIds($account);
+        $id = $this->parseAdWordsIds($account)[0];
 
-        $this->updateAds($ids, 2);
+        $campaigns = $this->fetchCampaigns($id)->filter(function ($i) {
+            return $i['budget'] > 1;
+        });
 
-        $res = [
-            'name' => $account['name']
-        ];
+        $campaign = $this->formatCampaigns($campaigns)[$request->campaign - 1];
 
-        return $this->sendResponse('Success!', $res);
+        $amountOld = $campaign['budget'];
+        $amountNew = 1;
+        $delay = $this->durationMapper($request->duration);
+
+        MutateCampaignBudget::dispatch($id, $campaign['budget_id'], $amountNew);
+        MutateCampaignBudget::dispatch($id, $campaign['budget_id'], $amountOld)
+            ->delay($delay);
+
+        return $this->sendResponse('', [
+            'old_budget' => $amountOld,
+            'new_budget' => $amountNew,
+            'reverted' => $delay->format("l M d, Y h:ia"),
+        ]);
     }
 
     /**
@@ -58,11 +71,11 @@ class StatusController extends MutationController
      *
      * TODO: Find way to mutate video ads
      * TODO: Find way to retrieve smart campaigns
-     * @param Array $accountIds
+     * @param Array|Collection $accountIds
      * @param integer $status
      * @return void
      */
-    public function updateAds(array $accountIds, $status = 1)
+    public function updateAds($accountIds, $status = 1)
     {
         $serviceClient = $this->adsClient()->getGoogleAdsServiceClient();
         $query = "SELECT campaign.id, campaign.advertising_channel_type FROM campaign";

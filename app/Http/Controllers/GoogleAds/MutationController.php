@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GoogleAds;
 
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class MutationController extends BaseController
 {
@@ -39,6 +40,36 @@ class MutationController extends BaseController
     }
 
     /**
+     * Gets a list of campaigns with the corresponding budgets
+     *
+     * Budgets that have a value of 1 are considered paused and thus are not displayed
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function activeCampaigns(Request $request)
+    {
+        $account = $this->fetchAccount($request->phone)['sales_account'];
+
+        if (!$this->accountIsValid($account))
+            abort(403, 'This feature is not enabled on your account');
+
+        $id = $this->parseAdWordsIds($account)[0];
+
+        $campaigns = $this->fetchCampaigns($id)->filter(function ($i) {
+            return $i['budget'] > 1;
+        });
+
+        $res = [
+            'name' => $account['name'],
+            'current_budget' => priceFormat($campaigns->sum('budget')),
+            'campaigns' => $this->formatCampaigns($campaigns),
+        ];
+
+        return $this->sendResponse('', $res);
+    }
+
+    /**
      * Check if account has feature enabled
      *
      * @param array $account
@@ -46,7 +77,6 @@ class MutationController extends BaseController
      */
     public function accountIsValid($account)
     {
-        return true;
         return filter_var($account['custom_field']['cf_budget_recommendation'], FILTER_VALIDATE_BOOLEAN);
     }
 
@@ -111,5 +141,39 @@ class MutationController extends BaseController
             return false;
         }
         return true;
+    }
+
+    /**
+     * Format campaign list
+     *
+     * Groups campaign list by budget id
+     * Forms a string to display in LandBot
+     *
+     * @param \Illuminate\Support\Collection $campaigns
+     * @return \Illuminate\Support\Collection
+     */
+    public function formatCampaigns($campaigns)
+    {
+        $res = collect();
+
+        foreach ($campaigns->groupBy('budget_id') as $id => $items) {
+            $val = [
+                'budget_id' => $id,
+                'budget' => $items[0]['budget'],
+                'items' => $items
+            ];
+
+            if ($items->count() > 1) {
+                $val['string'] = $items->pluck('name')->map(function ($i) {
+                    return '(' . $i . ')';
+                })->join('') . ' $' . $items[0]['budget'];
+            } else {
+                $val['string'] = $items[0]['name'] . ' $' . $items[0]['budget'];
+            }
+
+            $res->push($val);
+        }
+
+        return $res;
     }
 }
