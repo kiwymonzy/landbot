@@ -16,6 +16,10 @@ class WildJarController extends Controller
     public function calls(Request $request)
     {
         $fsAccount = $this->fetchAccount($request->phone)['sales_account'];
+
+        if ($this->accountIsValid($fsAccount))
+            abort(403, 'This feature is not enabled on your account');
+
         $wjAccount = $this->parseWildJarId($fsAccount);
 
         $wjAccounts = $this->fetchWJSubAccounts($wjAccount);
@@ -103,5 +107,16 @@ class WildJarController extends Controller
         })->pluck('id');
 
         return $allAccountIds->push($account);
+    }
+
+    /**
+     * Check if account has feature enabled
+     *
+     * @param array $account
+     * @return bool
+     */
+    private function accountIsValid($account)
+    {
+        return isset($account['custom_field']['cf_wildjar_id']);
     }
 }
