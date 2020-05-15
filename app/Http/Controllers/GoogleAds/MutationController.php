@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GoogleAds;
 
+use App\Jobs\MutateCampaignBudget;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -67,6 +68,24 @@ class MutationController extends BaseController
         ];
 
         return $this->sendResponse('', $res);
+    }
+
+    /**
+     * Mutate campaign budgets and revert after delay
+     *
+     * @param string $account_id
+     * @param array $campaign
+     * @param int $budget_new
+     * @param \Carbon\Carbon $delay
+     * @return void
+     */
+    public function mutateCampaign($account_id, $campaign, $budget_new, $delay)
+    {
+        $budget_old = $campaign['budget'];
+
+        MutateCampaignBudget::dispatch($account_id, $campaign['budget_id'], $budget_new);
+        MutateCampaignBudget::dispatch($account_id, $campaign['budget_id'], $budget_old)
+            ->delay($delay);
     }
 
     /**

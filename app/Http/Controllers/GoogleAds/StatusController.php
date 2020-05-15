@@ -48,20 +48,21 @@ class StatusController extends MutationController
         $campaigns = $this->fetchCampaigns($id)->filter(function ($i) {
             return $i['budget'] > 1;
         });
+        $campaigns = $this->formatCampaigns($campaigns);
 
-        $campaign = $this->formatCampaigns($campaigns)[$request->campaign - 1];
-
-        $amountOld = $campaign['budget'];
-        $amountNew = 1;
+        $budget_new = 1;
         $delay = $this->durationMapper($request->duration);
 
-        MutateCampaignBudget::dispatch($id, $campaign['budget_id'], $amountNew);
-        MutateCampaignBudget::dispatch($id, $campaign['budget_id'], $amountOld)
-            ->delay($delay);
+        if ($request->campaign - 1 < count($campaigns)) {
+            $campaign = $campaigns[$request->campaign - 1];
+            $this->mutateCampaign($id, $campaign, $budget_new, $delay);
+        } else {
+            foreach ($campaigns as $campaign) {
+                $this->mutateCampaign($id, $campaign, $budget_new, $delay);
+            }
+        }
 
         return $this->sendResponse('', [
-            'old_budget' => $amountOld,
-            'new_budget' => $amountNew,
             'reverted' => $delay->format("l M d, Y h:ia"),
         ]);
     }

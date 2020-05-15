@@ -28,17 +28,15 @@ class BudgetController extends MutationController
 
         $campaign = $this->formatCampaigns($campaigns)[$request->campaign - 1];
 
-        $amountOld = $campaign['budget'];
-        $amountNew = $campaign['budget'] + $this->formatAmount($request->amount);
+        $budget_old = $campaign['budget'];
+        $budget_new = $budget_old + $this->formatAmount($request->amount);
         $delay = $this->durationMapper($request->duration);
 
-        MutateCampaignBudget::dispatch($adsAccountId, $campaign['budget_id'], $amountNew);
-        MutateCampaignBudget::dispatch($adsAccountId, $campaign['budget_id'], $amountOld)
-            ->delay($delay);
+        $this->mutateCampaign($adsAccountId, $campaign, $budget_new, $delay);
 
         return $this->sendResponse('', [
-            'old_budget' => $amountOld,
-            'new_budget' => $amountNew,
+            'old_budget' => $budget_old,
+            'new_budget' => $budget_new,
             'reverted' => $delay->format("l M d, Y h:ia"),
         ]);
     }
