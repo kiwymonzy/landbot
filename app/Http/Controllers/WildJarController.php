@@ -17,7 +17,7 @@ class WildJarController extends Controller
     {
         $fsAccount = $this->fetchAccount($request->phone)['sales_account'];
 
-        if ($this->accountIsValid($fsAccount))
+        if (!$this->accountIsValid($fsAccount))
             abort(403, 'This feature is not enabled on your account');
 
         $wjAccount = $this->parseWildJarId($fsAccount);
