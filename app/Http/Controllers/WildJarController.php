@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Library\WildJar\WildJar;
+use App\Models\Call;
+use App\Models\Client;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -38,6 +40,18 @@ class WildJarController extends Controller
             'missed' => $calls['missedTot'] + $calls['abandonedTot'],
         ];
 
+        $call = Call::make([
+            'answered'  => $res['answered'],
+            'missed'    => $res['missed'],
+            'date_name' => $dates['name'],
+            'date_from' => $dates['start'],
+            'date_to'   => $dates['end'],
+        ]);
+        $call->client()->associate(
+            Client::firstWhere('freshsales_id', $fsAccount['id'])
+        );
+        $call->save();
+
         return $this->sendResponse('Success!', $res);
     }
 
@@ -49,35 +63,43 @@ class WildJarController extends Controller
             case 1:
                 $start = $start_base->startOfDay();
                 $end = $end_base->endOfDay();
+                $name = 'Today';
                 break;
             case 2:
                 $start = $start_base->subDay()->startOfDay();
                 $end = $end_base->subDay()->endOfDay();
+                $name = 'Yesterday';
                 break;
             case 3:
                 $start = $start_base->startofWeek();
                 $end = $end_base->endofWeek();
+                $name = 'This Week';
                 break;
             case 4:
                 $start = $start_base->subWeek()->startOfWeek();
                 $end = $end_base->subWeek()->endOfWeek();
+                $name = 'Last Week';
                 break;
             case 5:
                 $start = $start_base->startOfMonth();
                 $end = $end_base->endOfMonth();
+                $name = 'This Month';
                 break;
             case 6:
                 $start = $start_base->subMonth()->startOfMonth();
                 $end = $end_base->subMonth()->endOfMonth();
+                $name = 'Last Month';
                 break;
             default:
                 $start = $start_base->startOfDay();
                 $end = $end_base->endOfDay();
+                $name = 'Today';
                 break;
         }
         return [
             'start' => $start->format('Y-m-d\TH:i:s'),
             'end' => $end->format('Y-m-d\TH:i:s'),
+            'name' => $name,
         ];
     }
 

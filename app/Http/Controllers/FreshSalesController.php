@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use Illuminate\Http\Request;
 
 class FreshSalesController extends Controller
@@ -22,6 +23,14 @@ class FreshSalesController extends Controller
                 'email' => $manager['email']
             ]
         ];
+
+        Client::firstOrCreate(
+            ['freshsales_id' => $account['id']],
+            [
+                'company' => $account['name'],
+                'phone' => $account['custom_field']['cf_wa_number'],
+            ]
+        );
 
         return $this->sendResponse('Account found!', $res);
     }

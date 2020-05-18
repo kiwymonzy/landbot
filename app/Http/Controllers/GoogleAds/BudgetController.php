@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\GoogleAds;
 
 use App\Jobs\MutateCampaignBudget;
+use App\Models\BudgetMutation;
+use App\Models\Client;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class BudgetController extends MutationController
@@ -33,6 +36,7 @@ class BudgetController extends MutationController
         $delay = $this->durationMapper($request->duration);
 
         $this->mutateCampaign($adsAccountId, $campaign, $budget_new, $delay);
+        $this->storeMutation($account['id'], $campaign, $this->formatAmount($request->amount), $delay);
 
         return $this->sendResponse('', [
             'old_budget' => $budget_old,
@@ -41,9 +45,66 @@ class BudgetController extends MutationController
         ]);
     }
 
+    /**
+     * Returns a DateTime when the change will end
+     *
+     * Options:
+     * 1. Today
+     * 2. Today and Tomorrow
+     * 3. Next 3 Days
+     * 4. Next 7 Days
+     * 5. Next 30 Days
+     *
+     * @param int $index
+     * @return \Carbon\Carbon
+     */
+    public function durationMapper($index)
+    {
+        $date = Carbon::today();
+        switch ($index) {
+            case 1:
+                $date->addDays(1);
+                break;
+            case 2:
+                $date->addDays(2);
+                break;
+            case 3:
+                $date->addDays(3);
+                break;
+            case 4:
+                $date->addDays(7);
+                break;
+            case 5:
+                $date->addDays(30);
+                break;
+            default:
+                $date->addDay();
+                break;
+        }
+
+        return $date->setTime(9, 0);
+    }
+
     private function formatAmount($amount)
     {
         if ($amount < 0) $amount *= -1;
         return $amount;
+    }
+
+    private function storeMutation($account, $campaign, $adjust, $revert)
+    {
+        $amount_old = $campaign['budget'];
+        $amount_new = $amount_old + $adjust;
+        $status = BudgetMutation::make([
+            'amount_old'    => $amount_old,
+            'amount_adjust' => $adjust,
+            'amount_new'    => $amount_new,
+            'campaign'      => explode(' $', $campaign['string'])[0],
+            'date_revert'   => $revert,
+        ]);
+        $status->client()->associate(
+            Client::firstWhere('freshsales_id', $account)
+        );
+        $status->save();
     }
 }

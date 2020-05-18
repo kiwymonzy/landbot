@@ -42,19 +42,37 @@ class BaseController extends Controller
     {
         switch ($index) {
             case 1:
-                return 'TODAY';
+                $google = 'TODAY';
+                $name = 'Today';
+                break;
             case 2:
-                return 'YESTERDAY';
+                $google = 'YESTERDAY';
+                $name = 'Yesterday';
+                break;
             case 3:
-                return 'THIS_WEEK_SUN_TODAY';
+                $google = 'THIS_WEEK_SUN_TODAY';
+                $name = 'This Week';
+                break;
             case 4:
-                return 'LAST_WEEK_SUN_SAT';
+                $google = 'LAST_WEEK_SUN_SAT';
+                $name = 'Last Week';
+                break;
             case 5:
-                return 'THIS_MONTH';
+                $google = 'THIS_MONTH';
+                $name = 'This Month';
+                break;
             case 6:
-                return 'LAST_MONTH';
+                $google = 'LAST_MONTH';
+                $name = 'Last Month';
+                break;
             default:
-                return 'TODAY';
+                $google = 'TODAY';
+                $name = 'Today';
+                break;
         }
+        return [
+            'google' => $google,
+            'name' => $name,
+        ];
     }
 }

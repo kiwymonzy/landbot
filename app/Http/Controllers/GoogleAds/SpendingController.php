@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\GoogleAds;
 
+use App\Models\Client;
+use App\Models\Spending;
 use Illuminate\Http\Request;
 
 class SpendingController extends BaseController
@@ -16,6 +18,9 @@ class SpendingController extends BaseController
     {
         $account = $this->fetchAccount($request->phone)['sales_account'];
 
+        if (!$this->accountIsValid($account))
+            abort(403, 'This feature is not enabled on your account');
+
         $ids = $this->parseAdWordsIds($account);
 
         $spending = $this->fetchSpending($ids, $request->date);
@@ -24,6 +29,15 @@ class SpendingController extends BaseController
             'name' => $account['name'],
             'spending' => priceFormat($spending->sum()),
         ];
+
+        $spend = Spending::make([
+            'amount' => $spending->sum(),
+            'date_name' => $this->dateMapper($request->date)['name']
+        ]);
+        $spend->client()->associate(
+            Client::firstWhere('freshsales_id', $account['id'])
+        );
+        $spend->save();
 
         return $this->sendResponse('Success!', $res);
     }
@@ -39,7 +53,7 @@ class SpendingController extends BaseController
     {
         $serviceClient = $this->adsClient()->getGoogleAdsServiceClient();
 
-        $date = $this->dateMapper($dateIndex);
+        $date = $this->dateMapper($dateIndex)['google'];
         $query = 'SELECT metrics.cost_micros FROM customer WHERE segments.date DURING ' . $date;
 
         $spending = collect([]);
@@ -56,5 +70,16 @@ class SpendingController extends BaseController
         return $spending->map(function ($item) {
             return $item / 1000000;
         });
+    }
+
+    /**
+     * Check if account has feature enabled
+     *
+     * @param array $account
+     * @return bool
+     */
+    public function accountIsValid($account)
+    {
+        return isset($account['custom_field']['cf_adwords_ids']);
     }
 }

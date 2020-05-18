@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\GoogleAds;
 
 use App\Jobs\MutateCampaignBudget;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class MutationController extends BaseController
@@ -97,42 +96,6 @@ class MutationController extends BaseController
     public function accountIsValid($account)
     {
         return filter_var($account['custom_field']['cf_budget_recommendation'], FILTER_VALIDATE_BOOLEAN);
-    }
-
-    /**
-     * Returns a DateTime when the change will end
-     *
-     * Options:
-     * 1. Today
-     * 2. Today and Tomorrow
-     * 2. Next 3 Days
-     * 2. Next Week
-     *
-     * @param int $index
-     * @return \Carbon\Carbon
-     */
-    public function durationMapper($index)
-    {
-        $date = Carbon::today();
-        switch ($index) {
-            case 1:
-                $date->addDays(1);
-                break;
-            case 2:
-                $date->addDays(2);
-                break;
-            case 3:
-                $date->addDays(3);
-                break;
-            case 4:
-                $date->addWeek()->startOfWeek();
-                break;
-            default:
-                $date->addDay();
-                break;
-        }
-
-        return $date->setTime(9, 0);
     }
 
     /**

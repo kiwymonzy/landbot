@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\GoogleAds;
 
 use App\Jobs\MutateCampaignBudget;
+use App\Models\Client;
+use App\Models\StatusMutation;
+use Carbon\Carbon;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V3\ResourceNames;
 use Google\Ads\GoogleAds\V3\Enums\CampaignStatusEnum\CampaignStatus;
@@ -55,9 +58,11 @@ class StatusController extends MutationController
 
         if ($request->campaign - 1 < count($campaigns)) {
             $campaign = $campaigns[$request->campaign - 1];
+            $this->storeMutation($account, $delay, $campaign, true);
             $this->mutateCampaign($id, $campaign, $budget_new, $delay);
         } else {
             foreach ($campaigns as $campaign) {
+                $this->storeMutation($account, $delay, $campaign, true);
                 $this->mutateCampaign($id, $campaign, $budget_new, $delay);
             }
         }
@@ -122,5 +127,55 @@ class StatusController extends MutationController
             default:
                 return CampaignStatus::PAUSED;
         }
+    }
+
+    /**
+     * Returns a DateTime when the change will end
+     *
+     * Options:
+     * 1. Today
+     * 2. Today and Tomorrow
+     * 3. Next 3 Days
+     * 4. Next 7 Days
+     *
+     * @param int $index
+     * @return \Carbon\Carbon
+     */
+    public function durationMapper($index)
+    {
+        $date = Carbon::today();
+        switch ($index) {
+            case 1:
+                $date->addDays(1);
+                break;
+            case 2:
+                $date->addDays(2);
+                break;
+            case 3:
+                $date->addDays(3);
+                break;
+            case 4:
+                $date->addDays(7);
+                break;
+            default:
+                $date->addDay();
+                break;
+        }
+
+        return $date->setTime(9, 0);
+    }
+
+    private function storeMutation($account, $revert, $campaign, $pause = true)
+    {
+        $status = StatusMutation::make([
+            'status_old'  => $pause ? 'Active' : 'Paused',
+            'status_new'  => $pause ? 'Paused' : 'Active',
+            'campaign'    => explode(' $', $campaign['string'])[0],
+            'date_revert' => $revert,
+        ]);
+        $status->client()->associate(
+            Client::firstWhere('freshsales_id', $account)
+        );
+        $status->save();
     }
 }
