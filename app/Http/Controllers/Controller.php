@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Library\FreshSales\FreshSales;
 use App\Library\Utils\ResponseUtil;
+use App\Models\Client;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -59,10 +60,17 @@ class Controller extends BaseController
         $accounts = $fs->account()->search($number);
 
         // Find first exact match in number name custom field
-        foreach ($accounts as $acc) {
-            $match = $acc['more_match'];
-            if ($match['field_name'] == 'WA Number' && $match['field_value'] == $number) {
-                return $fs->account()->get($acc['id'], $account_params);
+        foreach ($accounts as $account) {
+            $match = $account['more_match'];
+            if (
+                $match['field_name'] == 'WA Number' &&
+                $match['field_value'] == $number
+            ) {
+                $account = $fs->account()->get($account['id'], $account_params);
+
+                $this->makeModel($account['sales_account']);
+
+                return $account;
             }
         }
 
@@ -73,5 +81,16 @@ class Controller extends BaseController
         ]);
 
         abort(404, 'Phone number not found');
+    }
+
+    private function makeModel($account)
+    {
+        Client::firstOrCreate(
+            ['freshsales_id' => $account['id']],
+            [
+                'company' => $account['name'],
+                'phone' => $account['custom_field']['cf_wa_number'],
+            ]
+        );
     }
 }

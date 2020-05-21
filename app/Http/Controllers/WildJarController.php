@@ -27,35 +27,49 @@ class WildJarController extends Controller
         $wjAccounts = $this->fetchWJSubAccounts($wjAccount);
 
         $dates = $this->dateMapper($request->date);
-        $data = [
-            'account' => $wjAccounts->join(','),
-            'datefrom' => $dates['start'],
-            'dateto' => $dates['end'],
-            'timezone' => 'Australia/Sydney',
-        ];
-        $calls = $this->client->summary()->filter($data)['summary'];
+
+        $calls = $this->fetchCalls($wjAccounts, $dates);
 
         $res = [
             'answered' => intval($calls['answeredTot']),
             'missed' => $calls['missedTot'] + $calls['abandonedTot'],
         ];
 
-        $call = Call::make([
-            'answered'  => $res['answered'],
-            'missed'    => $res['missed'],
-            'date_name' => $dates['name'],
-            'date_from' => $dates['start'],
-            'date_to'   => $dates['end'],
-        ]);
-        $call->client()->associate(
-            Client::firstWhere('freshsales_id', $fsAccount['id'])
-        );
-        $call->save();
+        $this->makeModel($res, $dates, $fsAccount);
 
         return $this->sendResponse('Success!', $res);
     }
 
-    public function dateMapper($index)
+    private function fetchCalls($accounts, $dates)
+    {
+        $data = [
+            'account' => $accounts->join(','),
+            'datefrom' => $dates['start'],
+            'dateto' => $dates['end'],
+            'timezone' => 'Australia/Sydney',
+        ];
+
+        return $this->client->summary()->filter($data)['summary'];
+    }
+
+    /**
+     * Parse WildJar sub accounts from ID
+     *
+     * @param \Illuminate\Support\Collection $account
+     * @return \Illuminate\Support\Collection
+     */
+    private function fetchWJSubAccounts($account)
+    {
+        $allAccounts = $this->client->account()->all();
+
+        $allAccountIds = $allAccounts->filter(function($q) use ($account) {
+            return $q['father'] == $account;
+        })->pluck('id');
+
+        return $allAccountIds->push($account);
+    }
+
+    private function dateMapper($index)
     {
         $start_base = Carbon::today();
         $end_base = Carbon::today();
@@ -109,26 +123,9 @@ class WildJarController extends Controller
      * @param \Illuminate\Support\Collection $account
      * @return array
      */
-    public function parseWildJarId($account)
+    private function parseWildJarId($account)
     {
         return $account['custom_field']['cf_wildjar_id'];
-    }
-
-    /**
-     * Parse WildJar sub accounts from ID
-     *
-     * @param \Illuminate\Support\Collection $account
-     * @return \Illuminate\Support\Collection
-     */
-    public function fetchWJSubAccounts($account)
-    {
-        $allAccounts = $this->client->account()->all();
-
-        $allAccountIds = $allAccounts->filter(function($q) use ($account) {
-            return $q['father'] == $account;
-        })->pluck('id');
-
-        return $allAccountIds->push($account);
     }
 
     /**
@@ -140,5 +137,20 @@ class WildJarController extends Controller
     private function accountIsValid($account)
     {
         return isset($account['custom_field']['cf_wildjar_id']);
+    }
+
+    private function makeModel($data, $dates, $account)
+    {
+        $call = Call::make([
+            'answered'  => $data['answered'],
+            'missed'    => $data['missed'],
+            'date_name' => $dates['name'],
+            'date_from' => $dates['start'],
+            'date_to'   => $dates['end'],
+        ]);
+        $call->client()->associate(
+            Client::firstWhere('freshsales_id', $account['id'])
+        );
+        $call->save();
     }
 }
