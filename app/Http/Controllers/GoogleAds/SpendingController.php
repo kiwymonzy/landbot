@@ -9,12 +9,12 @@ use Illuminate\Http\Request;
 class SpendingController extends BaseController
 {
     /**
-     * Get current spending
+     * Get current spendings
      *
      * @param Request $request
      * @return void
      */
-    public function spending(Request $request)
+    public function spendings(Request $request)
     {
         $account = $this->fetchAccount($request->phone)['sales_account'];
 
@@ -23,27 +23,21 @@ class SpendingController extends BaseController
 
         $ids = $this->parseAdWordsIds($account);
 
-        $spending = $this->fetchSpending($ids, $request->date);
+        $spendings = $this->fetchSpending($ids, $request->date);
 
-        $res = [
-            'name' => $account['name'],
-            'spending' => priceFormat($spending->sum()),
-        ];
+        $this->makeModel($account, $spendings, $request->date);
 
-        $spend = Spending::make([
-            'amount' => $spending->sum(),
-            'date_name' => $this->dateMapper($request->date)['name']
-        ]);
-        $spend->client()->associate(
-            Client::firstWhere('freshsales_id', $account['id'])
+        return $this->sendResponse(
+            'Success!',
+            [
+                'name' => $account['name'],
+                'spendings' => priceFormat($spendings->sum()),
+            ]
         );
-        $spend->save();
-
-        return $this->sendResponse('Success!', $res);
     }
 
     /**
-     * Fetch spending of from AdWord IDs
+     * Fetch spendings  from AdWord IDs
      *
      * @param Array|Collection $accountIds
      * @param Integer $date
@@ -56,7 +50,7 @@ class SpendingController extends BaseController
         $date = $this->dateMapper($dateIndex)['google'];
         $query = 'SELECT metrics.cost_micros FROM customer WHERE segments.date DURING ' . $date;
 
-        $spending = collect([]);
+        $spendings = collect([]);
 
         foreach ($accountIds as $id) {
             $sum = 0;
@@ -64,10 +58,10 @@ class SpendingController extends BaseController
             foreach ($stream->iterateAllElements() as $row) {
                 $sum += $row->getMetrics()->getCostMicrosUnwrapped();
             }
-            $spending->push($sum);
+            $spendings->push($sum);
         }
 
-        return $spending->map(function ($item) {
+        return $spendings->map(function ($item) {
             return $item / 1000000;
         });
     }
@@ -81,5 +75,18 @@ class SpendingController extends BaseController
     public function accountIsValid($account)
     {
         return isset($account['custom_field']['cf_adwords_ids']);
+    }
+
+    public function makeModel($account, $spendings, $dateIndex)
+    {
+        $spending = Spending::make([
+            'amount' => $spendings->sum(),
+            'date_name' => $this->dateMapper($dateIndex)['name']
+        ]);
+
+        $client = Client::firstWhere('freshsales_id', $account['id']);
+        $spending->client()->associate($client);
+
+        $spending->save();
     }
 }

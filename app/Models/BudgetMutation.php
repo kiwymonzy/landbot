@@ -11,6 +11,7 @@ class BudgetMutation extends Model
         'amount_adjust',
         'amount_new',
         'campaign',
+        'date_name',
         'date_revert',
     ];
 

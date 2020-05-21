@@ -10,33 +10,54 @@ class MutationController extends BaseController
     /**
      * Fetch campaigns from Google Ads account
      *
-     * @param string $id
+     * @param Array $accountIds
      * @return \Illuminate\Support\Collection
      */
-    public function fetchCampaigns($id)
+    public function fetchCampaigns($accountIds)
     {
         $serviceClient = $this->adsClient()->getGoogleAdsServiceClient();
 
         $query = 'SELECT campaign.id, campaign.name, campaign_budget.amount_micros, campaign_budget.id, campaign.advertising_channel_type FROM campaign';
 
         $campaigns = collect();
-        $stream = $serviceClient->search($id, $query);
-        foreach ($stream->iterateAllElements() as $row) {
-            if (!$this->passFilter($row)) continue;
-            $id = $row->getCampaign()->getIdUnwrapped();
-            $name = $row->getCampaign()->getName()->getValue();
-            $budget = $row->getCampaignBudget()->getAmountMicrosUnwrapped();
-            $budget_id = $row->getCampaignBudget()->getIdUnwrapped();
 
-            $campaigns->push([
-                'id' => $id,
-                'name' => $name,
-                'budget' => $budget / 1000000,
-                'budget_id' => $budget_id,
-            ]);
+        foreach ($accountIds as $accountId) {
+            $stream = $serviceClient->search($accountId, $query);
+            foreach ($stream->iterateAllElements() as $row) {
+
+                if (!$this->passFilter($row)) continue;
+
+                $campaignId = $row->getCampaign()->getIdUnwrapped();
+                $name = $row->getCampaign()->getName()->getValue();
+                $budget = $row->getCampaignBudget()->getAmountMicrosUnwrapped();
+                $budgetId = $row->getCampaignBudget()->getIdUnwrapped();
+
+                $campaigns->push([
+                    'name' => $name,
+                    'budget' => $budget / 1000000,
+                    'account_id' => $accountId,
+                    'budget_id' => $budgetId,
+                    'campaign_id' => $campaignId,
+                ]);
+            }
         }
 
         return $campaigns;
+    }
+
+    /**
+     * Fetch campaigns with a budget higher than 1
+     *
+     * @param string $account
+     * @return \Illuminate\Support\Collection
+     */
+    public function fetchActiveCampaigns($account)
+    {
+        $id = $this->parseAdWordsIds($account);
+
+        return $this->fetchCampaigns($id)->filter(function ($i) {
+            return $i['budget'] > 1;
+        });
     }
 
     /**
@@ -54,11 +75,7 @@ class MutationController extends BaseController
         if (!$this->accountIsValid($account))
             abort(403, 'This feature is not enabled on your account');
 
-        $id = $this->parseAdWordsIds($account)[0];
-
-        $campaigns = $this->fetchCampaigns($id)->filter(function ($i) {
-            return $i['budget'] > 1;
-        });
+        $campaigns = $this->fetchActiveCampaigns($account);
 
         $res = [
             'name' => $account['name'],
@@ -72,18 +89,17 @@ class MutationController extends BaseController
     /**
      * Mutate campaign budgets and revert after delay
      *
-     * @param string $account_id
      * @param array $campaign
      * @param int $budget_new
      * @param \Carbon\Carbon $delay
      * @return void
      */
-    public function mutateCampaign($account_id, $campaign, $budget_new, $delay)
+    public function mutateCampaign($campaign, $budget_new, $delay)
     {
         $budget_old = $campaign['budget'];
 
-        MutateCampaignBudget::dispatch($account_id, $campaign['budget_id'], $budget_new);
-        MutateCampaignBudget::dispatch($account_id, $campaign['budget_id'], $budget_old)
+        MutateCampaignBudget::dispatch($campaign['account_id'], $campaign['budget_id'], $budget_new);
+        MutateCampaignBudget::dispatch($campaign['account_id'], $campaign['budget_id'], $budget_old)
             ->delay($delay);
     }
 
@@ -139,18 +155,20 @@ class MutationController extends BaseController
         $res = collect();
 
         foreach ($campaigns->groupBy('budget_id') as $id => $items) {
+            $item = $items[0];
             $val = [
+                'account_id' => $item['account_id'],
                 'budget_id' => $id,
-                'budget' => $items[0]['budget'],
+                'budget' => $item['budget'],
                 'items' => $items
             ];
 
             if ($items->count() > 1) {
                 $val['string'] = $items->pluck('name')->map(function ($i) {
-                    return '(' . $i . ')';
-                })->join('') . ' $' . $items[0]['budget'];
+                    return "($i)";
+                })->join('') . ' $' . $item['budget'];
             } else {
-                $val['string'] = $items[0]['name'] . ' $' . $items[0]['budget'];
+                $val['string'] = $item['name'] . ' $' . $item['budget'];
             }
 
             $res->push($val);

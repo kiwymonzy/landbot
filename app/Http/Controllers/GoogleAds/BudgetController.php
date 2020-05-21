@@ -23,25 +23,21 @@ class BudgetController extends MutationController
         if (!$this->accountIsValid($account))
             abort(403, 'This feature is not enabled on your account');
 
-        $adsAccountId = $this->parseAdWordsIds($account)[0];
-
-        $campaigns = $this->fetchCampaigns($adsAccountId)->filter(function($i) {
-            return $i['budget'] > 1;
-        });
+        $campaigns = $this->fetchActiveCampaigns($account);
 
         $campaign = $this->formatCampaigns($campaigns)[$request->campaign - 1];
 
-        $budget_old = $campaign['budget'];
-        $budget_new = $budget_old + $this->formatAmount($request->amount);
+        $budgetOld = $campaign['budget'];
+        $budgetNew = $budgetOld + $this->formatAmount($request->amount);
         $delay = $this->durationMapper($request->duration);
 
-        $this->mutateCampaign($adsAccountId, $campaign, $budget_new, $delay);
+        $this->mutateCampaign($campaign, $budgetNew, $delay['date']);
         $this->storeMutation($account['id'], $campaign, $this->formatAmount($request->amount), $delay);
 
         return $this->sendResponse('', [
-            'old_budget' => $budget_old,
-            'new_budget' => $budget_new,
-            'reverted' => $delay->format("l M d, Y h:ia"),
+            'old_budget' => $budgetOld,
+            'new_budget' => $budgetNew,
+            'reverted' => $delay['date']->format("l M d, Y h:ia"),
         ]);
     }
 
@@ -56,7 +52,7 @@ class BudgetController extends MutationController
      * 5. Next 30 Days
      *
      * @param int $index
-     * @return \Carbon\Carbon
+     * @return array
      */
     public function durationMapper($index)
     {
@@ -64,25 +60,34 @@ class BudgetController extends MutationController
         switch ($index) {
             case 1:
                 $date->addDays(1);
+                $name = 'Today';
                 break;
             case 2:
                 $date->addDays(2);
+                $name = 'Today and Tomorrow';
                 break;
             case 3:
                 $date->addDays(3);
+                $name = 'Next 3 Days';
                 break;
             case 4:
                 $date->addDays(7);
+                $name = 'Next 7 Days';
                 break;
             case 5:
                 $date->addDays(30);
+                $name = 'Next 30 Days';
                 break;
             default:
                 $date->addDay();
+                $name = 'Today';
                 break;
         }
 
-        return $date->setTime(9, 0);
+        return [
+            'name' => $name,
+            'date' => $date->setTime(9, 0)
+        ];
     }
 
     private function formatAmount($amount)
@@ -91,20 +96,21 @@ class BudgetController extends MutationController
         return $amount;
     }
 
-    private function storeMutation($account, $campaign, $adjust, $revert)
+    private function storeMutation($account, $campaign, $adjust, $delay)
     {
-        $amount_old = $campaign['budget'];
-        $amount_new = $amount_old + $adjust;
-        $status = BudgetMutation::make([
-            'amount_old'    => $amount_old,
+        $amountOld = $campaign['budget'];
+        $amountNew = $amountOld + $adjust;
+        $budgetMutation = BudgetMutation::make([
+            'amount_old'    => $amountOld,
             'amount_adjust' => $adjust,
-            'amount_new'    => $amount_new,
+            'amount_new'    => $amountNew,
             'campaign'      => explode(' $', $campaign['string'])[0],
-            'date_revert'   => $revert,
+            'date_name'     => $delay['name'],
+            'date_revert'   => $delay['date'],
         ]);
-        $status->client()->associate(
+        $budgetMutation->client()->associate(
             Client::firstWhere('freshsales_id', $account)
         );
-        $status->save();
+        $budgetMutation->save();
     }
 }

@@ -46,9 +46,9 @@ class StatusController extends MutationController
     {
         $account = $this->fetchAccount($request->phone)['sales_account'];
 
-        $id = $this->parseAdWordsIds($account)[0];
+        $ids = $this->parseAdWordsIds($account);
 
-        $campaigns = $this->fetchCampaigns($id)->filter(function ($i) {
+        $campaigns = $this->fetchCampaigns($ids)->filter(function ($i) {
             return $i['budget'] > 1;
         });
         $campaigns = $this->formatCampaigns($campaigns);
@@ -57,18 +57,16 @@ class StatusController extends MutationController
         $delay = $this->durationMapper($request->duration);
 
         if ($request->campaign - 1 < count($campaigns)) {
-            $campaign = $campaigns[$request->campaign - 1];
-            $this->storeMutation($account, $delay, $campaign, true);
-            $this->mutateCampaign($id, $campaign, $budget_new, $delay);
-        } else {
-            foreach ($campaigns as $campaign) {
-                $this->storeMutation($account, $delay, $campaign, true);
-                $this->mutateCampaign($id, $campaign, $budget_new, $delay);
-            }
+            $campaigns = [$campaigns[$request->campaign - 1]];
+        }
+
+        foreach ($campaigns as $campaign) {
+            $this->mutateCampaign($campaign, $budget_new, $delay);
+            $this->storeMutation($account['id'], $campaign, $delay, true);
         }
 
         return $this->sendResponse('', [
-            'reverted' => $delay->format("l M d, Y h:ia"),
+            'reverted' => $delay['date']->format("l M d, Y h:ia"),
         ]);
     }
 
@@ -147,31 +145,40 @@ class StatusController extends MutationController
         switch ($index) {
             case 1:
                 $date->addDays(1);
+                $name = 'Today';
                 break;
             case 2:
                 $date->addDays(2);
+                $name = 'Today and Tomorrow';
                 break;
             case 3:
                 $date->addDays(3);
+                $name = 'Next 3 Days';
                 break;
             case 4:
                 $date->addDays(7);
+                $name = 'Next 7 Days';
                 break;
             default:
                 $date->addDay();
+                $name = 'Today';
                 break;
         }
 
-        return $date->setTime(9, 0);
+        return [
+            'name' => $name,
+            'date' => $date->setTime(9, 0)
+        ];
     }
 
-    private function storeMutation($account, $revert, $campaign, $pause = true)
+    private function storeMutation($account, $campaign, $duration, $pause = true)
     {
         $status = StatusMutation::make([
             'status_old'  => $pause ? 'Active' : 'Paused',
             'status_new'  => $pause ? 'Paused' : 'Active',
             'campaign'    => explode(' $', $campaign['string'])[0],
-            'date_revert' => $revert,
+            'date_name'   => $duration['name'],
+            'date_revert' => $duration['date'],
         ]);
         $status->client()->associate(
             Client::firstWhere('freshsales_id', $account)

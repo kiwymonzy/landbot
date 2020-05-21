@@ -10,6 +10,7 @@ class StatusMutation extends Model
         'campaign',
         'status_old',
         'status_new',
+        'date_name',
         'date_revert',
     ];
 
