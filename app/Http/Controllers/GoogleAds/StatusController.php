@@ -61,7 +61,7 @@ class StatusController extends MutationController
         }
 
         foreach ($campaigns as $campaign) {
-            $this->mutateCampaign($campaign, $budget_new, $delay);
+            $this->mutateCampaign($campaign, $budget_new, $delay['date']);
             $this->storeMutation($account['id'], $campaign, $delay, true);
         }
 
