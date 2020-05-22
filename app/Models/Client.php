@@ -11,4 +11,24 @@ class Client extends Model
         'company',
         'freshsales_id',
     ];
+
+    public function calls()
+    {
+        return $this->hasMany(Call::class);
+    }
+
+    public function spendings()
+    {
+        return $this->hasMany(Spending::class);
+    }
+
+    public function budgetMutations()
+    {
+        return $this->hasMany(BudgetMutation::class);
+    }
+
+    public function statusMutations()
+    {
+        return $this->hasMany(StatusMutation::class);
+    }
 }
