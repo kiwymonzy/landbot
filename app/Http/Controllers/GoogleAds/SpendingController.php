@@ -74,7 +74,7 @@ class SpendingController extends BaseController
      */
     public function accountIsValid($account)
     {
-        return isset($account['custom_field']['cf_adwords_ids']);
+        return !is_null($account['custom_field']['cf_adwords_ids']);
     }
 
     public function makeModel($account, $spendings, $dateIndex)
