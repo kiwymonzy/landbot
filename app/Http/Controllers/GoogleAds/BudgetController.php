@@ -90,12 +90,6 @@ class BudgetController extends MutationController
         ];
     }
 
-    private function formatAmount($amount)
-    {
-        if ($amount < 0) $amount *= -1;
-        return $amount;
-    }
-
     private function storeMutation($account, $campaign, $adjust, $delay)
     {
         $amountOld = $campaign['budget'];

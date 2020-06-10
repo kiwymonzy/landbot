@@ -43,6 +43,11 @@ class WildJar
         return $this->call;
     }
 
+    /**
+     * Return Summary object
+     *
+     * @return \App\Library\WildJar\Helpers\Summary
+     */
     public function summary()
     {
         return $this->summary;
@@ -58,6 +63,11 @@ class WildJar
         return $this->account;
     }
 
+    /**
+     * Authenticate before making requests
+     *
+     * @return void
+     */
     public function authenticate()
     {
         return Http::withBasicAuth($this->user, $this->pass)
@@ -66,6 +76,13 @@ class WildJar
             ])->json()['access_token'];
     }
 
+    /**
+     * Execute get request
+     *
+     * @param string $uri
+     * @param array $params
+     * @return array
+     */
     public function get($uri, $params = [])
     {
         return $this->client->get($this->url . $uri, $params)->json();

@@ -85,7 +85,7 @@ class Controller extends BaseController
 
     private function makeModel($account)
     {
-        Client::firstOrCreate(
+        Client::updateOrCreate(
             ['freshsales_id' => $account['id']],
             [
                 'company' => $account['name'],

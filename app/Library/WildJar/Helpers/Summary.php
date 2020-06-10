@@ -20,11 +20,11 @@ class Summary
      */
     public function index()
     {
-        return collect($this->client->get('reports/summary')['data'])->recursive();
+        return collect($this->client->get('reports/summary2')['data'])->recursive();
     }
 
     public function filter($params = [])
     {
-        return collect($this->client->get('reports/summary', $params)['data'])->recursive();
+        return collect($this->client->get('reports/summary2', $params)['data'])->recursive();
     }
 }

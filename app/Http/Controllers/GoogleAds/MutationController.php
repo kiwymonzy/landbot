@@ -27,10 +27,10 @@ class MutationController extends BaseController
 
                 if (!$this->passFilter($row)) continue;
 
-                $campaignId = $row->getCampaign()->getIdUnwrapped();
                 $name = $row->getCampaign()->getName()->getValue();
                 $budget = $row->getCampaignBudget()->getAmountMicrosUnwrapped();
                 $budgetId = $row->getCampaignBudget()->getIdUnwrapped();
+                $campaignId = $row->getCampaign()->getIdUnwrapped();
 
                 $campaigns->push([
                     'name' => $name,
@@ -175,5 +175,11 @@ class MutationController extends BaseController
         }
 
         return $res;
+    }
+
+    public function formatAmount($amount)
+    {
+        if ($amount < 0) $amount *= -1;
+        return $amount;
     }
 }

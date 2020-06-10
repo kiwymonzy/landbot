@@ -10,6 +10,7 @@ class Client extends Model
         'phone',
         'company',
         'freshsales_id',
+        'landbot_id',
     ];
 
     public function calls()
@@ -30,5 +31,10 @@ class Client extends Model
     public function statusMutations()
     {
         return $this->hasMany(StatusMutation::class);
+    }
+
+    public function recommendations()
+    {
+        return $this->hasMany(BudgetRecommendation::class);
     }
 }

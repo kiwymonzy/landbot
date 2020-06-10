@@ -31,8 +31,11 @@ class MutateCampaignBudget implements ShouldQueue
      * @param int $amount
      * @return void
      */
-    public function __construct($adsAccountId, $adsCampaignBudgetId, $amount)
-    {
+    public function __construct(
+        $adsAccountId,
+        $adsCampaignBudgetId,
+        $amount
+    ){
         $this->adsAccountId = $adsAccountId;
         $this->adsCampaignBudgetId = $adsCampaignBudgetId;
         $this->amount = $amount;
