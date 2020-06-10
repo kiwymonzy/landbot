@@ -5,6 +5,7 @@ namespace App\Console;
 use App\Console\Commands\OutgoingRecommendation;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -28,7 +29,19 @@ class Kernel extends ConsoleKernel
         $schedule->command(OutgoingRecommendation::class)
             ->dailyAt('12:30')
             ->timezone('Australia/Sydney')
-            ->weekdays();
+            ->weekdays()
+            ->before(function () {
+                Log::info('Starting recommendations...');
+            })
+            ->after(function () {
+                Log::info('Finishing recommendations...');
+            })
+            ->onSuccess(function () {
+                Log::info('Recommendations completed...');
+            })
+            ->onFailure(function () {
+                Log::info('Recommendations failed...');
+            });
     }
 
     /**
