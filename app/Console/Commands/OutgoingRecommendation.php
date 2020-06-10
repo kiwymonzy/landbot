@@ -187,7 +187,7 @@ class OutgoingRecommendation extends Command
                         'account_id' => $i['account_id'],
                         'budget_id'  => $i['budget_id'],
                         'cpc'        => $cpc,
-                        'calls'      => $$wildJarCall,
+                        'calls'      => $wildJarCall,
                         'budget'     => $i['budget'],
                         'campaigns'  => $i['campaigns'],
                     ];
