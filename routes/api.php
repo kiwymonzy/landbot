@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 // FreshSales Commands
 Route::post('account', 'FreshSalesController@account');
 
+Route::post('statistics',       'StatisticsController@statistics');
+
 // GoogleAds Commands
 Route::post('spendings',       'GoogleAds\SpendingController@spendings');
 Route::post('billing',        'GoogleAds\BillingController@billing');
