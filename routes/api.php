@@ -18,17 +18,22 @@ use Illuminate\Support\Facades\Route;
 // FreshSales Commands
 Route::post('account', 'FreshSalesController@account');
 
-Route::post('statistics',       'StatisticsController@statistics');
+Route::post('statistics', 'StatisticsController@statistics');
 
 // GoogleAds Commands
-Route::post('spendings',       'GoogleAds\SpendingController@spendings');
-Route::post('billing',        'GoogleAds\BillingController@billing');
-Route::post('accounts',       'GoogleAds\AccountController@accounts');
+Route::post('spendings', 'GoogleAds\SpendingController@spendings');
+Route::post('billing', 'GoogleAds\BillingController@billing');
+Route::post('accounts', 'GoogleAds\AccountController@accounts');
 Route::post('active-campaigns', 'GoogleAds\MutationController@activeCampaigns');
+
 // Mutations
-Route::post('change-budget',  'GoogleAds\BudgetController@changeBudget');
-Route::post('pause',          'GoogleAds\StatusController@pause');
-// Route::post('enable',         'GoogleAds\StatusController@enable');
+Route::post('change-budget', 'GoogleAds\BudgetController@changeBudget');
+Route::post('pause', 'GoogleAds\StatusController@pause');
+// Route::post('enable', 'GoogleAds\StatusController@enable');'
+
+// Gravity forms
+Route::get('gravity-forms', 'FormNotificationController@latestNotification');
+Route::post('gravity-forms', 'FormNotificationController@saveAndNotify');
 
 // Recommendations
 Route::group(['prefix' => 'recommendations'], function () {
@@ -39,28 +44,3 @@ Route::group(['prefix' => 'recommendations'], function () {
 
 // WildJar Commands
 Route::post('calls', 'WildJarController@calls');
-
-Route::get('test', function() {
-    $calls = 10;
-    $change = 20.332;
-    $adsCampaignBudget = 225;
-    $adsCampaigns = collect([
-        'Results Laser Clinic - Cosmetic Injectables WA',
-        'Results Laser Clinic - Laser WA',
-    ]);
-    $adsAccountId = '5151053398';
-    $adsCampaignBudgetId = '6670677588';
-    $clientId = 30;
-    dispatch(new SendRecommendation(
-        $calls,
-        $change,
-        $adsCampaignBudget,
-        $adsCampaigns,
-        $adsAccountId,
-        $adsCampaignBudgetId,
-        $clientId
-    ));
-    // $lb = (new LandBot)->customer();
-    // $lb->sendMessage('36409872', "Hi, we've noticed that the performance of your campaign(s) CAMPAIGN HERE have bee performing exceptionally well");
-    // $lb->assignBot('36409872', '505201');
-});

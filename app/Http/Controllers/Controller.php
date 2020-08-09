@@ -48,23 +48,23 @@ class Controller extends BaseController
     /**
      * Fetch account from FreshSales API
      *
-     * @param String $channel
+     * @param String $query
      * @return \Illuminate\Support\Collection
      */
-    public function fetchAccount(String $number, $account_params = [])
+    public function fetchAccount(String $query, $account_params = [], $field = 'WA Number')
     {
         // Create FreshSales client
         $fs = new FreshSales();
 
-        // Search for number name in accounts
-        $accounts = $fs->account()->search($number);
+        // Search for query in accounts
+        $accounts = $fs->account()->search($query);
 
-        // Find first exact match in number name custom field
+        // Find first exact match in query custom field
         foreach ($accounts as $account) {
             $match = $account['more_match'];
             if (
-                $match['field_name'] == 'WA Number' &&
-                $match['field_value'] == $number
+                $match['field_name'] == $field &&
+                $match['field_value'] == $query
             ) {
                 $account = $fs->account()->get($account['id'], $account_params);
 
@@ -75,12 +75,12 @@ class Controller extends BaseController
         }
 
         // Throw error when none found
-        Log::error('Phone number not found', [
-            'number' => $number,
+        Log::error('Account not found', [
+            'query' => $query,
             'search_results' => $accounts
         ]);
 
-        abort(404, 'Phone number not found');
+        abort(404, 'Account not found');
     }
 
     private function makeModel($account)

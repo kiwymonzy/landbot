@@ -37,4 +37,9 @@ class Client extends Model
     {
         return $this->hasMany(BudgetRecommendation::class);
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(WebNotification::class);
+    }
 }
