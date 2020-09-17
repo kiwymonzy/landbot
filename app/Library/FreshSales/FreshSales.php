@@ -34,4 +34,9 @@ class FreshSales
     {
         return $this->client->get($this->url . $uri, $params)->json();
     }
+
+    public function post($uri, $params = [])
+    {
+        return $this->client->post($this->url . $uri, $params)->json();
+    }
 }

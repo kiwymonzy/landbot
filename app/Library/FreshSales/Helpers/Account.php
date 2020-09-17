@@ -15,13 +15,11 @@ class Account
 
     public function search($query, $options = [])
     {
-        $params = array_merge([
-            'q' => $query,
-            'include' => 'sales_account',
-            'per_page' => 100,
+        $body = array_merge([
+            "filter_rule" => $query
         ], $options);
 
-        return collect($this->client->get('search', $params))->recursive();
+        return collect($this->client->post('filtered_search/sales_account', $body))->recursive();
     }
 
     /**

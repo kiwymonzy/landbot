@@ -51,36 +51,38 @@ class Controller extends BaseController
      * @param String $query
      * @return \Illuminate\Support\Collection
      */
-    public function fetchAccount(String $query, $account_params = [], $field = 'WA Number')
+    public function fetchAccount(String $query, $account_params = [], $field = 'cf_wa_number')
     {
         // Create FreshSales client
         $fs = new FreshSales();
 
         // Search for query in accounts
-        $accounts = $fs->account()->search($query);
-
-        // Find first exact match in query custom field
-        foreach ($accounts as $account) {
-            $match = $account['more_match'];
-            if (
-                $match['field_name'] == $field &&
-                $match['field_value'] == $query
-            ) {
-                $account = $fs->account()->get($account['id'], $account_params);
-
-                $this->makeModel($account['sales_account']);
-
-                return $account;
-            }
-        }
-
-        // Throw error when none found
-        Log::error('Account not found', [
-            'query' => $query,
-            'search_results' => $accounts
+        $accounts = $fs->account()->search([
+            [
+                "attribute" => $field,
+                "operator" => "contains_any",
+                "value" => [$query],
+            ],
         ]);
 
-        abort(404, 'Account not found');
+        $results = $accounts['sales_accounts'];
+
+        // Throw error when none found
+        if ($results->isEmpty()) {
+            Log::error('Account not found', [
+                'query' => $query,
+                'search_results' => $accounts
+            ]);
+
+            abort(404, 'Account not found');
+        }
+
+        // Use first result as account
+        $account = $results[0];
+        $account = $fs->account()->get($account['id'], $account_params);
+
+        $this->makeModel($account['sales_account']);
+        return $account;
     }
 
     private function makeModel($account)

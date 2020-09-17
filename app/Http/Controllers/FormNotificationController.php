@@ -16,7 +16,7 @@ class FormNotificationController extends Controller
     public function latestNotification(Request $request)
     {
         $client = Client::firstWhere('phone', 'like', '%' . $request->phone);
-        
+
         $notification = $client->notifications()
             ->latest()
             ->first();
@@ -41,7 +41,7 @@ class FormNotificationController extends Controller
         $this->handleLandBot($client);
         $landbotCustomer = (new LandBot())->customer();
 
-        dd($landbotCustomer->assignBot($client->landbot_id, self::BOT_ID));
+        $landbotCustomer->assignBot($client->landbot_id, self::BOT_ID);
     }
 
     private function saveModel(Client $client, Request $request)
@@ -60,15 +60,15 @@ class FormNotificationController extends Controller
     private function findClient(String $origin)
     {
         $domain = parse_url($origin)['host'];
-        
-        $account = $this->fetchAccount($domain, [], 'Notification Domains')['sales_account'];
+
+        $account = $this->fetchAccount($domain, [], 'cf_notification_domain')['sales_account'];
 
         $domainString = $account['custom_field']['cf_notification_domain'];
         $domains = collect(explode(',', $domainString));
-        
+
         if (!$domains->contains($domain))
             abort(404, 'Account not found');
-        
+
         return Client::firstWhere('freshsales_id', $account['id']);
     }
 
@@ -76,7 +76,7 @@ class FormNotificationController extends Controller
     {
         if (!is_null($client->landbot_id))
             return ;
-        
+
         $phone = substr($client->phone, 1);
         $landbot_id = (new LandBot())
             ->customer()
