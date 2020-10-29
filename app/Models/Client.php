@@ -13,11 +13,13 @@ class Client extends Model
         'landbot_id',
     ];
 
+    //? Potentially unused
     public function calls()
     {
         return $this->hasMany(Call::class);
     }
 
+    //? Potentially unused
     public function spendings()
     {
         return $this->hasMany(Spending::class);
@@ -41,5 +43,10 @@ class Client extends Model
     public function notifications()
     {
         return $this->hasMany(WebNotification::class);
+    }
+
+    public function statistics()
+    {
+        return $this->hasMany(Statistic::class);
     }
 }

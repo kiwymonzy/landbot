@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class StatusMutation extends Model
 {
+    const ACTIVE = 'Active';
+    const PAUSED = 'Paused';
+
     protected $fillable = [
         'campaign',
         'status_old',

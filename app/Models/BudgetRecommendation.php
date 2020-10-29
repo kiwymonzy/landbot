@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class BudgetRecommendation extends Model
 {
-    public const PENDING = 1;
-    public const ACCEPTED = 2;
-    public const DECLINED = 3;
+    const PENDING = 1;
+    const ACCEPTED = 2;
+    const DECLINED = 3;
 
     protected $fillable = [
         'budget',

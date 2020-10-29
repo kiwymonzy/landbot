@@ -44,3 +44,21 @@ Route::group(['prefix' => 'recommendations'], function () {
 
 // WildJar Commands
 Route::post('calls', 'WildJarController@calls');
+
+Route::group(['prefix' => 'dashboard'], function() {
+    Route::group(['prefix' => 'client'], function() {
+        Route::get('requests', 'Dashboard\ClientController@requests');
+        Route::get('mutations', 'Dashboard\ClientController@mutations');
+        Route::get('count', 'Dashboard\ClientController@count');
+    });
+    Route::group(['prefix' => 'statistics'], function() {
+        Route::get('count', 'Dashboard\StatisticsController@count');
+    });
+    Route::group(['prefix' => 'recommendations'], function() {
+        Route::get('count', 'Dashboard\RecommendationController@count');
+    });
+    Route::group(['prefix' => 'google'], function() {
+        Route::get('budget-increase', 'Dashboard\GoogleAdsController@budgetIncreaseCount');
+        Route::get('pause', 'Dashboard\GoogleAdsController@pauseCount');
+    });
+});
