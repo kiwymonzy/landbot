@@ -28,16 +28,27 @@ class WildJarController extends Controller
 
         $dates = $this->dateMapper($request->date);
 
-        $calls = $this->fetchCalls($wjAccounts, $dates);
+        $calls = $this->fetchCalls($wjAccounts, $dates)
+            ->map(function($call) {
+                return [
+                    'name' => $call['dateStartLocal'],
+                    'link' => $call['audio']
+                ];
+            })
+            ->filter(function($call) {
+                return !is_null($call['link']);
+            })
+            ->sortBy('name')
+            ->values();
 
-        $res = [
-            'answered' => intval($calls['answeredTot']),
-            'missed' => $calls['missedTot'] + $calls['abandonedTot'],
-        ];
+        // $res = [
+        //     'answered' => intval($calls['answeredTot']),
+        //     'missed' => $calls['missedTot'] + $calls['abandonedTot'],
+        // ];
 
-        $this->makeModel($res, $dates, $fsAccount);
+        // $this->makeModel($res, $dates, $fsAccount);
 
-        return $this->sendResponse('Success!', $res);
+        return $this->sendResponse('Success!', $calls);
     }
 
     private function fetchCalls($accounts, $dates)
@@ -49,7 +60,7 @@ class WildJarController extends Controller
             'timezone' => 'Australia/Sydney',
         ];
 
-        return $this->client->summary()->filter($data)['summary'];
+        return $this->client->call()->index($data);
     }
 
     /**

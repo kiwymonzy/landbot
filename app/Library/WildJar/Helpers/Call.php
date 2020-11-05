@@ -18,9 +18,9 @@ class Call
      *
      * @return \Illuminate\Support\Collection
      */
-    public function index()
+    public function index($params)
     {
-        return collect($this->client->get('call')['data'])->recursive();
+        return collect($this->client->get('call', $params)['data'])->recursive();
     }
 
     public function filter($params = [])
