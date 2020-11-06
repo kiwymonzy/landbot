@@ -30,8 +30,11 @@ class WildJarController extends Controller
 
         $calls = $this->fetchCalls($wjAccounts, $dates)
             ->map(function($call) {
+                $time = Carbon::parse($call['dateStartLocal']);
+                $source = $call['web']['source'];
+                $caller = $call['caller'];
                 return [
-                    'name' => $call['dateStartLocal'],
+                    'name' => $time->format('HA') . ' ' . $source . ' ' . $caller,
                     'link' => $call['audio']
                 ];
             })
