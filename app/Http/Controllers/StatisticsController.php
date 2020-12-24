@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Library\GoogleAds\GoogleAds;
 use App\Library\WildJar\WildJar;
-use App\Models\Call;
 use App\Models\Client;
-use App\Models\Spending;
 use App\Models\Statistic;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -36,7 +34,7 @@ class StatisticsController extends Controller
         $result['calls'] = $this->calls($result);
         $result['cost_per_call'] = $this->costPerCall($result);
         $result['click_to_call'] = $this->clickToCall($result);
-        
+
         $this->makeModel($result, $dates, $fsAccount);
 
         return $this->sendResponse('Retrieved statistics', $result);
@@ -142,9 +140,9 @@ class StatisticsController extends Controller
 
     /**
      * Map dates for WildJar
-     * 
-     * @param integer $index 
-     * @return array 
+     *
+     * @param integer $index
+     * @return array
      */
     private function dateMapper($index)
     {
@@ -272,36 +270,5 @@ class StatisticsController extends Controller
         $statistic->client()->associate($client);
 
         $statistic->save();
-        
-        // $this->makeCallModel($data, $dates, $account);
-        // $this->makeSpendingModel($data, $dates, $account);
-    }
-
-    private function makeCallModel($data, $dates, $account)
-    {
-        $call = Call::make([
-            'answered'  => $data['answered'],
-            'missed'    => $data['missed'],
-            'date_name' => $dates['name'],
-            'date_from' => $dates['start'],
-            'date_to'   => $dates['end'],
-        ]);
-        $call->client()->associate(
-            Client::firstWhere('freshsales_id', $account['id'])
-        );
-        $call->save();
-    }
-    
-    public function makeSpendingModel($data, $dates, $account)
-    {
-        $spending = Spending::make([
-            'amount' => $data['spendings'],
-            'date_name' => $dates['name']
-        ]);
-
-        $client = Client::firstWhere('freshsales_id', $account['id']);
-        $spending->client()->associate($client);
-
-        $spending->save();
     }
 }

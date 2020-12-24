@@ -26,22 +26,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('recommendations:queue')
-            ->dailyAt('12:30')
-            ->timezone('Australia/Sydney')
-            ->weekdays()
-            ->before(function () {
-                Log::info('Starting recommendations...');
-            })
-            ->after(function () {
-                Log::info('Finishing recommendations...');
-            })
-            ->onSuccess(function () {
-                Log::info('Recommendations completed...');
-            })
-            ->onFailure(function () {
-                Log::info('Recommendations failed...');
-            });
+        $schedule->command('notify:enquiries')
+            ->hourly()
+            ->between('9:00', '17:00');
     }
 
     /**

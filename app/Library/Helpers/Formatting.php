@@ -10,3 +10,8 @@ function priceFormat($amount)
 {
     return (float) sprintf("%.2f", $amount);
 }
+
+function currencyFormat($amount)
+{
+    return '$' . priceFormat($amount);
+}

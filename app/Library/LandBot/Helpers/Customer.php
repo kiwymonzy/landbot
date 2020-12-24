@@ -22,10 +22,15 @@ class Customer
      */
     public function searchBy($field, $value)
     {
-        return $this->client->get('customers/', [
+        return collect($this->client->get('customers/', [
             'search_by' => $field,
             'search' => $value
-        ]);
+        ]))->recursive();
+    }
+
+    public function sendTemplate($customerId, $templateDetails)
+    {
+        return collect($this->client->post("customers/{$customerId}/send_template/", $templateDetails));
     }
 
     public function sendMessage($customerId, $message)
