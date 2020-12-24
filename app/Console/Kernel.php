@@ -28,7 +28,9 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('notify:enquiries')
             ->hourly()
-            ->between('9:00', '17:00');
+            ->weekdays()
+            ->between('9:00', '17:00')
+            ->runInBackground();
     }
 
     /**
