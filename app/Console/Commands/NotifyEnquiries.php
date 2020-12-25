@@ -112,6 +112,7 @@ class NotifyEnquiries extends Command
                     ]
                 ]
             ] = $this->freshClient->get($freshId);
+            $freshWaNumber = preg_replace('/[^0-9\-]/', '', $freshWaNumber);
 
             // Check if customer is opted in
             $customers = $this->landbotClient->searchBy('phone', $freshWaNumber)['customers'];
