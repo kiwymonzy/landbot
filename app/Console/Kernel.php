@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -29,7 +30,19 @@ class Kernel extends ConsoleKernel
             ->hourly()
             ->weekdays()
             ->between('9:00', '17:00')
-            ->runInBackground();
+            ->runInBackground()
+            ->before(function () {
+                Log::info('Starting enquiry notification...');
+            })
+            ->after(function () {
+                Log::info('Finishing enquiry notification...');
+            })
+            ->onSuccess(function () {
+                Log::info('Completed enquiry notification...');
+            })
+            ->onFailure(function () {
+                Log::info('Failed enquiry notification...');
+            });
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Library\GoogleAds\GoogleAds;
 use App\Library\LandBot\LandBot;
 use App\Library\WildJar\WildJar;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -30,39 +31,34 @@ class NotifyEnquiries extends Command
     protected $description = 'Notify accounts with flag enabled on Fresh';
 
     /**
-     * Fresh account client
-     *
      * @var \App\Library\FreshSales\Helpers\Account
      */
     private $freshClient;
 
     /**
-     * Landbot customer client
-     *
      * @var \App\Library\LandBot\Helpers\Customer
      */
     private $landbotClient;
 
     /**
-     * Google ads client
-     *
      * @var \Google\Ads\GoogleAds\V3\Services\GoogleAdsServiceClient
      */
     private $adsClient;
 
     /**
-     * Wildjar client
-     *
      * @var \App\Library\WildJar\WildJar
      */
     private $wildjarClient;
 
     /**
-     * Current time
-     *
-     * @var string
+     * @var Carbon
      */
     private $currentTime;
+
+    /**
+     * @var string
+     */
+    private $formattedTime;
 
     /**
      * Create a new command instance.
@@ -78,7 +74,8 @@ class NotifyEnquiries extends Command
             ->client()
             ->getGoogleAdsServiceClient();
         $this->wildjarClient = new WildJar;
-        $this->currentTime = now()->format('H:i');
+        $this->currentTime = now();
+        $this->formattedTime = $this->currentTime->format('H:i');
     }
 
     /**
@@ -93,8 +90,18 @@ class NotifyEnquiries extends Command
             [
                 'attribute' => 'cf_whatsapp_hourly_updates',
                 'operator' => 'is_any',
-                'value' => ['true']
-            ]
+                'value' => ['true'],
+            ],
+            [
+                'attribute' => 'cf_whatsapp_hourly_updates__days',
+                'operator' => 'contains',
+                'value' => $this->currentTime->format('l'),
+            ],
+            [
+                'attribute' => 'cf_whatsapp_hourly_updates__times',
+                'operator' => 'contains',
+                'value' => $this->currentTime->format('G:00'),
+            ],
         ])['sales_accounts'];
 
         // Process
@@ -134,7 +141,7 @@ class NotifyEnquiries extends Command
             // Send template to customer
             $templateParams = [
                 $name,
-                $this->currentTime,
+                $this->formattedTime,
                 currencyFormat($spending),
                 (string) $calls,
                 currencyFormat($cpe),
