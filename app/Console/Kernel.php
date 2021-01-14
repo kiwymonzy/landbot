@@ -32,9 +32,6 @@ class Kernel extends ConsoleKernel
             ->before(function () {
                 Log::info('Starting enquiry notification...');
             })
-            ->after(function () {
-                Log::info('Finishing enquiry notification...');
-            })
             ->onSuccess(function () {
                 Log::info('Completed enquiry notification...');
             })

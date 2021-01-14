@@ -61,6 +61,11 @@ class NotifyEnquiries extends Command
     private $formattedTime;
 
     /**
+     * @var bool
+     */
+    private $hasErrors;
+
+    /**
      * Create a new command instance.
      *
      * @return void
@@ -76,12 +81,13 @@ class NotifyEnquiries extends Command
         $this->wildjarClient = new WildJar;
         $this->currentTime = now();
         $this->formattedTime = $this->currentTime->format('H:i');
+        $this->hasErrors = false;
     }
 
     /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return bool
      */
     public function handle()
     {
@@ -159,8 +165,11 @@ class NotifyEnquiries extends Command
                     'details' => $templateParams,
                     'response' => $res->toArray(),
                 ]);
+                $this->hasErrors = true;
             }
         });
+
+        return !$this->hasErrors;
     }
 
     /**
