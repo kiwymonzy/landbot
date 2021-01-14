@@ -211,8 +211,8 @@ class NotifyEnquiries extends Command
 
         $data = [
             'account' => $ids->join(','),
-            'datefrom' => today()->startOfDay(),
-            'dateto' => today()->endOfDay(),
+            'datefrom' => today()->startOfDay()->format('Y-m-d\TH:i:s'),
+            'dateto' => today()->endOfDay()->format('Y-m-d\TH:i:s'),
             'timezone' => 'Australia/Sydney',
         ];
 
