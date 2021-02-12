@@ -12,6 +12,16 @@ use Illuminate\Support\Str;
 
 class StatisticsController extends Controller
 {
+    /**
+     * @var \App\Library\WildJar
+     */
+    protected $wildJar;
+
+    /**
+     * @var \Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient
+     */
+    protected $adsClient;
+
     public function __construct()
     {
         $this->wildJar = new WildJar;
@@ -128,8 +138,8 @@ class StatisticsController extends Controller
             $stream = $serviceClient->search($id, $query);
             foreach ($stream->iterateAllElements() as $row) {
                 $metrics = $row->getMetrics();
-                $spend += $metrics->getCostMicrosUnwrapped();
-                $click += $metrics->getClicksUnwrapped();
+                $spend += $metrics->getCostMicros();
+                $click += $metrics->getClicks();
             }
             $result['spendings']->push($spend / 1000000);
             $result['clicks']->push($click);

@@ -204,7 +204,7 @@ class OutgoingRecommendation extends Command
     /**
      * Fetch information from Google Ads
      * @param \Illuminate\Support\Collection $ids
-     * @param Carbon\Carbon $date
+     * @param \Carbon\Carbon $date
      * @return \Illuminate\Support\Collection
      */
     private function handleGoogleAds($ids, $date)
@@ -229,7 +229,7 @@ class OutgoingRecommendation extends Command
     /**
      * Fetch information from WildJar
      * @param string $id
-     * @param Carbon\CarbonPeriod $dates
+     * @param \Carbon\CarbonPeriod $dates
      * @return array
      */
     private function handleWildJar($id, $dates)
@@ -301,7 +301,7 @@ class OutgoingRecommendation extends Command
     /**
      * Fetch campaigns from Google Ads
      * @param \Illuminate\Support\Collection $ids
-     * @param string $date
+     * @param \Carbon\Carbon $date
      * @return \Illuminate\Support\Collection
      */
     private function fetchCampaigns($ids, $date)
@@ -339,7 +339,7 @@ class OutgoingRecommendation extends Command
      * Filter campaigns based on blacklist
      *
      * @param mixed $row
-     * @return boolean
+     * @return bool
      */
     private function passGoogleAdsFilter($row)
     {

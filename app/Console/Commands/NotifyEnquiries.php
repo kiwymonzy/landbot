@@ -190,8 +190,7 @@ class NotifyEnquiries extends Command
             $spend = 0;
             $stream = $this->adsClient->search($id, $query);
             foreach ($stream->iterateAllElements() as $row) {
-                $spend += $row->getMetrics()
-                    ->getCostMicrosUnwrapped();
+                $spend += $row->getMetrics()->getCostMicros();
             }
             $result->push($spend / 1000000);
         }
