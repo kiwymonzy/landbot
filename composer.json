@@ -15,7 +15,8 @@
         "guzzlehttp/guzzle": "^6.3",
         "laravel/framework": "^7.0",
         "laravel/tinker": "^2.0",
-        "mpdf/mpdf": "^8.0"
+        "mpdf/mpdf": "^8.0",
+        "tmarois/laravel-ads-sdk": "^1.2"
     },
     "require-dev": {
         "facade/ignition": "^2.0",

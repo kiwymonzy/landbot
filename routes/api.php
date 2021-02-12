@@ -65,3 +65,4 @@ Route::group(['prefix' => 'dashboard'], function() {
 
 // PDF
 Route::get('pdf/{account}', 'PDFController@store');
+Route::get('test', 'TestController@index');
