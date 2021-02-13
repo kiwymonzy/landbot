@@ -27,10 +27,10 @@ class MutationController extends BaseController
 
                 if (!$this->passFilter($row)) continue;
 
-                $name = $row->getCampaign()->getName()->getValue();
-                $budget = $row->getCampaignBudget()->getAmountMicrosUnwrapped();
-                $budgetId = $row->getCampaignBudget()->getIdUnwrapped();
-                $campaignId = $row->getCampaign()->getIdUnwrapped();
+                $name = $row->getCampaign()->getName();
+                $budget = $row->getCampaignBudget()->getAmountMicros();
+                $budgetId = $row->getCampaignBudget()->getId();
+                $campaignId = $row->getCampaign()->getId();
 
                 $campaigns->push([
                     'name' => $name,
