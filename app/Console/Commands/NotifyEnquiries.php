@@ -169,7 +169,7 @@ class NotifyEnquiries extends Command
             }
         });
 
-        return !$this->hasErrors;
+        return (int) $this->hasErrors;
     }
 
     /**
