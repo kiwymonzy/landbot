@@ -41,7 +41,7 @@ class NotifyEnquiries extends Command
     private $landbotClient;
 
     /**
-     * @var \Google\Ads\GoogleAds\V3\Services\GoogleAdsServiceClient
+     * @var \Google\Ads\GoogleAds\V6\Services\GoogleAdsServiceClient
      */
     private $adsClient;
 
@@ -142,7 +142,7 @@ class NotifyEnquiries extends Command
             $calls = $this->fetchCalls($freshWildjarId);
 
             // Calculate cost per enquiry
-            $cpe = $spending / $calls;
+            $cpe = $spending / ($calls ? $calls : 1);
 
             // Send template to customer
             $templateParams = [
