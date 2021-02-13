@@ -2,10 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Library\GoogleAds\GoogleAds;
-use Google\AdsApi\AdWords\v201809\cm\CampaignService;
-use Google\AdsApi\AdWords\v201809\cm\DateRange;
-use Google\AdsApi\AdWords\v201809\cm\Selector;
 use LaravelAds\LaravelAds;
 
 class TestController extends Controller
@@ -31,8 +27,9 @@ class TestController extends Controller
         foreach ($ids as $id) {
             $service = LaravelAds::bingAds()
                 ->with($id)
-                ->reports($dates['from'], $dates['to'])
-                ->getAccountReport();
+                ->fetch()
+                ->getCampaigns()
+                ;
             dd($service);
         }
     }
