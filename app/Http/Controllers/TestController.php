@@ -9,7 +9,7 @@ class TestController extends Controller
     public function index()
     {
         $ids = [
-            'F104M6TL',
+            '135091877',
         ];
 
         $dates = [
@@ -27,9 +27,8 @@ class TestController extends Controller
         foreach ($ids as $id) {
             $service = LaravelAds::bingAds()
                 ->with($id)
-                ->fetch()
-                ->getCampaigns()
-                ;
+                ->reports($dates['from'], $dates['to'])
+                ->getAccountReport();
             dd($service);
         }
     }
