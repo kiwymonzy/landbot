@@ -4,9 +4,9 @@ namespace App\Jobs;
 
 use App\Library\GoogleAds\GoogleAds;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V3\ResourceNames;
-use Google\Ads\GoogleAds\V3\Resources\CampaignBudget;
-use Google\Ads\GoogleAds\V3\Services\CampaignBudgetOperation;
+use Google\Ads\GoogleAds\Util\V6\ResourceNames;
+use Google\Ads\GoogleAds\V6\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V6\Services\CampaignBudgetOperation;
 use Google\ApiCore\ApiException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -35,7 +35,7 @@ class MutateCampaignBudget implements ShouldQueue
         $adsAccountId,
         $adsCampaignBudgetId,
         $amount
-    ){
+    ) {
         $this->adsAccountId = $adsAccountId;
         $this->adsCampaignBudgetId = $adsCampaignBudgetId;
         $this->amount = $amount;
@@ -52,7 +52,7 @@ class MutateCampaignBudget implements ShouldQueue
 
         $campaignBudget = new CampaignBudget([
             'resource_name' => ResourceNames::forCampaignBudget($this->adsAccountId, $this->adsCampaignBudgetId),
-            'amount_micros' => $this->amount * 1000000
+            'amount_micros' => $this->amount * 1000000,
         ]);
 
         $campaignBudgetOperation = new CampaignBudgetOperation();
