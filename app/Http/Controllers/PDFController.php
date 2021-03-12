@@ -171,13 +171,13 @@ class PDFController extends Controller
                     <div style=\"border: 1px solid #0072bc; background-color: #0072bc; color: white; padding: 10px;\">
                         <strong>Ad Group {$o1}: {$adGroupOne['name']}</strong>
                     </div>
-                    <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 14px;\">
+                    <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 13px;\">
                         {$adGroupOne['expanded_texts']->join('<br />')}
                     </div>
                     <div style=\"border: solid #0072bc; color: #0072bc; border-width: 0 1px; padding: 10px;\">
                         Keyword List
                     </div>
-                    <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 14px;\">
+                    <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 13px;\">
                         {$adGroupOne['keywords']->join('<br/>')}
                     </div>
                 </div>
@@ -185,13 +185,13 @@ class PDFController extends Controller
                     <div style=\"border: 1px solid #0072bc; background-color: #0072bc; color: white; padding: 10px;\">
                         <strong>Ad Group {$o2}: {$adGroupTwo['name']}</strong>
                     </div>
-                    <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 14px;\">
+                    <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 13px;\">
                         {$adGroupTwo['expanded_texts']->join('<br />')}
                     </div>
                     <div style=\"border: solid #0072bc; color: #0072bc; border-width: 0 1px; padding: 10px;\">
                         Keyword List
                     </div>
-                    <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 14px;\">
+                    <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 13px;\">
                         {$adGroupTwo['keywords']->join('<br/>')}
                     </div>
                 </div>
@@ -205,19 +205,31 @@ class PDFController extends Controller
         $toWrite = '<div style="float: left;">';
 
         // Sitelink Extensions
-        $sitelinks = $extensions['sitelink']->map(function ($values, $key) {
-            $value = $values->join('<br/>');
-            return "<p>{$value}<br/><span style=\"color: #1a0dab;\">{$key}</span></p>";
+        $sitelinks = $extensions['sitelink']->map(function ($values, $url) {
+            $text = $values['text']->join('<br/>');
+            return "
+                <p>
+                    {$text}
+                    <br/>
+                    {$values['line1']}
+                    <br/>
+                    {$values['line2']}
+                    <br/>
+                    <span style=\"color: #1a0dab;\">
+                        {$url}
+                    </span>
+                </p>
+            ";
         })->join('');
         $toWrite .= "
             <div style=\"text-align: center; width: 50%; float: left; margin-bottom: 25px; margin-right: 25px;\">
                 <div style=\"border: 1px solid #0072bc; background-color: #0072bc; color: white; padding: 10px;\">
                     <strong>Sitelink Extensions</strong>
                 </div>
-                <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 14px;\">
+                <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 13px;\">
                     The sitelinks ad extension shows links to specific pages on your website beneath the text of your ads helping customers get to what they are looking for on your site with just one click. Sitelinks appear in ads at the top and bottom of Google search results.
                 </div>
-                <div style=\"border: 1px solid #0072bc; border-top-width: 0; padding: 10px; font-size: 14px;\">
+                <div style=\"border: 1px solid #0072bc; border-top-width: 0; padding: 10px; font-size: 13px;\">
                     {$sitelinks}
                 </div>
             </div>
@@ -234,10 +246,10 @@ class PDFController extends Controller
                 <div style=\"border: 1px solid #0072bc; background-color: #0072bc; color: white; padding: 10px;\">
                     <strong>Callout Extensions</strong>
                 </div>
-                <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 14px;\">
+                <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 13px;\">
                     The call-out ad extension lets you include additional text with your search ads. This lets you provide detailed information about your business, including products and services that you offer. Call-outs appear in ads at the top and bottom of Google search results.
                 </div>
-                <div style=\"border: 1px solid #0072bc; border-top-width: 0; padding: 10px; font-size: 14px;\">
+                <div style=\"border: 1px solid #0072bc; border-top-width: 0; padding: 10px; font-size: 13px;\">
                     {$callouts}
                 </div>
             </div>
@@ -249,12 +261,12 @@ class PDFController extends Controller
         $toWrite .= "
             <div style=\"text-align: center; width: 50%; float: left; margin-bottom: 25px; margin-right: 25px;\">
                 <div style=\"border: 1px solid #0072bc; background-color: #0072bc; color: white; padding: 10px;\">
-                    <strong>Callout Extensions</strong>
+                    <strong>Structured Snippets</strong>
                 </div>
-                <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 14px;\">
-                    The call-out ad extension lets you include additional text with your search ads. This lets you provide detailed information about your business, including products and services that you offer. Call-outs appear in ads at the top and bottom of Google search results.
+                <div style=\"border: 1px solid #0072bc; padding: 10px; font-size: 13px;\">
+                    Structured snippets are extensions that highlight specific aspects of your products and services. They show underneath your text ad.
                 </div>
-                <div style=\"border: 1px solid #0072bc; border-top-width: 0; padding: 10px; font-size: 14px; text-align: left;\">
+                <div style=\"border: 1px solid #0072bc; border-top-width: 0; padding: 10px; font-size: 13px; text-align: left;\">
                     {$snippets}
                 </div>
             </div>
@@ -411,9 +423,10 @@ class PDFController extends Controller
         $extensionsQuery = "SELECT
                 extension_feed_item.extension_type,
                 extension_feed_item.device,
-                extension_feed_item.sitelink_feed_item.final_mobile_urls,
                 extension_feed_item.sitelink_feed_item.final_urls,
                 extension_feed_item.sitelink_feed_item.link_text,
+                extension_feed_item.sitelink_feed_item.line1,
+                extension_feed_item.sitelink_feed_item.line2,
                 extension_feed_item.callout_feed_item.callout_text,
                 extension_feed_item.structured_snippet_feed_item.header,
                 extension_feed_item.structured_snippet_feed_item.values
@@ -435,18 +448,26 @@ class PDFController extends Controller
                     [
                         'url' => $url,
                         'text' => $text,
+                        'line1' => $line1,
+                        'line2' => $line2,
                     ] = $sitelink;
 
                     // Initialize url collection
                     if (!$extensions['sitelink']->offsetExists($url)) {
-                        $extensions['sitelink'][$url] = collect();
+                        $extensions['sitelink'][$url] = collect([
+                            'text' => collect(),
+                            'line1' => '',
+                            'line2' => '',
+                        ]);
                     }
 
                     // Ignore existing text
                     if ($extensions['sitelink'][$url]->contains($text)) break;
 
                     // Push new text
-                    $extensions['sitelink'][$url]->push($text);
+                    $extensions['sitelink'][$url]['text']->push($text);
+                    $extensions['sitelink'][$url]['line1'] = $line1;
+                    $extensions['sitelink'][$url]['line2'] = $line2;
                     break;
                 case ExtensionType::CALLOUT:
                     if (!$extension->hasCalloutFeedItem()) break;
@@ -502,6 +523,8 @@ class PDFController extends Controller
         $url = "{$scheme}://{$host}{$path}";
 
         $text = $sitelink->getLinkText();
+        $line1 = $sitelink->getLine1();
+        $line2 = $sitelink->getLine2();
 
         if ($extension->getDevice() == FeedItemTargetDevice::MOBILE) {
             $text .= ' (Mobile)';
@@ -510,6 +533,8 @@ class PDFController extends Controller
         return [
             'url' => $url,
             'text' => $text,
+            'line1' => $line1,
+            'line2' => $line2,
         ];
     }
 }
