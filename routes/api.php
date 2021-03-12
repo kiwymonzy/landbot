@@ -62,3 +62,6 @@ Route::group(['prefix' => 'dashboard'], function() {
         Route::get('pause', 'Dashboard\GoogleAdsController@pauseCount');
     });
 });
+
+// PDF
+Route::get('pdf/{account}', 'PDFController@store');
