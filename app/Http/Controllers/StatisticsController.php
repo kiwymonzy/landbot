@@ -7,6 +7,7 @@ use App\Library\WildJar\WildJar;
 use App\Models\Client;
 use App\Models\Statistic;
 use Carbon\Carbon;
+use ErrorException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -221,7 +222,11 @@ class StatisticsController extends Controller
         $allAccounts = $this->wildJar->account()->all();
 
         $allAccountIds = $allAccounts->filter(function ($q) use ($account) {
-            return $q['father'] == $account;
+            try {
+                return $q['father'] == $account;
+            } catch(ErrorException $e) {
+                return false;
+            }
         })->pluck('id');
 
         return $allAccountIds->push($account);
