@@ -8,6 +8,7 @@ use App\Library\FreshSales\FreshSales;
 use App\Library\GoogleAds\GoogleAds;
 use App\Library\LandBot\LandBot;
 use App\Library\WildJar\WildJar;
+use ErrorException;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -248,7 +249,11 @@ class NotifyEnquiries extends Command
         $allAccounts = $this->wildjarClient->account()->all();
 
         $allAccountIds = $allAccounts->filter(function ($q) use ($wildjarId) {
-            return $q['father'] == $wildjarId;
+            try {
+                return $q['father'] == $wildjarId;
+            } catch (ErrorException $e) {
+                return false;
+            }
         })->pluck('id');
 
         return $allAccountIds->push($wildjarId);
