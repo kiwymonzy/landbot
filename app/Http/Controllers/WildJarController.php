@@ -6,6 +6,7 @@ use App\Library\WildJar\WildJar;
 use App\Models\Client;
 use App\Models\Recording;
 use Carbon\Carbon;
+use ErrorException;
 use Illuminate\Http\Request;
 
 class WildJarController extends Controller
@@ -103,7 +104,11 @@ class WildJarController extends Controller
         $allAccounts = $this->client->account()->all();
 
         $allAccountIds = $allAccounts->filter(function($q) use ($account) {
-            return $q['father'] == $account;
+            try {
+                return $q['father'] == $account;
+            } catch (ErrorException $e) {
+                return false;
+            }
         })->pluck('id');
 
         return $allAccountIds->push($account);
