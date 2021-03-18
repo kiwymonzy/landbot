@@ -157,16 +157,14 @@ class PDFController extends Controller
 
         $i = 1;
         // // Container -- Start
-        $toWrite = '<div style="float: left;">';
         for ($i = 0; $i < $adGroups->count() / 2; $i++) {
             $offset = $i * 2;
-            $adGroupOne = $adGroups->offsetGet($offset);
-            $adGroupTwo = $adGroups->offsetGet($offset + 1);
+            $toWrite = '<div style="float: left;">';
 
-            $o1 = $offset + 1;
-            $o2 = $offset + 2;
-            $toWrite = "
-            <div style=\"float: left;\">
+            if ($adGroups->offsetExists($offset)) {
+                $adGroupOne = $adGroups->offsetGet($offset);
+                $o1 = $offset + 1;
+                $toWrite .= "
                 <div style=\"text-align: center; width: 50%; float: left; margin-bottom: 25px; margin-right: 25px;\">
                     <div style=\"border: 1px solid #0072bc; background-color: #0072bc; color: white; padding: 10px;\">
                         <strong>Ad Group {$o1}: {$adGroupOne['name']}</strong>
@@ -181,6 +179,12 @@ class PDFController extends Controller
                         {$adGroupOne['keywords']->join('<br/>')}
                     </div>
                 </div>
+                ";
+            }
+            if ($adGroups->offsetExists($offset + 1)) {
+                $adGroupTwo = $adGroups->offsetGet($offset + 1);
+                $o2 = $offset + 2;
+                $toWrite .= "
                 <div style=\"text-align: center; width: 50%; float: left; margin-bottom: 25px; margin-left: 25px;\">
                     <div style=\"border: 1px solid #0072bc; background-color: #0072bc; color: white; padding: 10px;\">
                         <strong>Ad Group {$o2}: {$adGroupTwo['name']}</strong>
@@ -195,8 +199,11 @@ class PDFController extends Controller
                         {$adGroupTwo['keywords']->join('<br/>')}
                     </div>
                 </div>
-            </div>
-            ";
+                ";
+            }
+
+            $toWrite .= "</div>";
+
             $pdf->WriteHTML($toWrite);
             $pdf->AddPage();
         }
