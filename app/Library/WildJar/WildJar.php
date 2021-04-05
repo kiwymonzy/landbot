@@ -5,6 +5,8 @@ namespace App\Library\WildJar;
 use App\Library\WildJar\Helpers\Account;
 use App\Library\WildJar\Helpers\Call;
 use App\Library\WildJar\Helpers\Summary;
+use App\Models\Config;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 
 class WildJar
@@ -12,6 +14,7 @@ class WildJar
     private $user;
     private $pass;
     private $url;
+    private $token;
     private $client;
     private $call;
     private $summary;
@@ -23,9 +26,10 @@ class WildJar
         $this->pass = config('wildjar.pass');
         $this->url = config('wildjar.url');
 
-        $token = $this->authenticate();
+        $this->init();
+
         $this->client = Http::withHeaders([
-            'Authorization' => "Bearer $token"
+            'Authorization' => "Bearer {$this->token}"
         ]);
 
         $this->call = new Call($this);
@@ -63,6 +67,18 @@ class WildJar
         return $this->account;
     }
 
+    public function init()
+    {
+        $token = Config::firstWhere('name', 'wildjar_token');
+        $expiration = Carbon::parse($token->meta->expires_at);
+
+        if (is_null($token) || now()->isAfter($expiration)) {
+            $token = $this->authenticate();
+        }
+
+        $this->token = $token->value;
+    }
+
     /**
      * Authenticate before making requests
      *
@@ -70,10 +86,23 @@ class WildJar
      */
     public function authenticate()
     {
-        return Http::withBasicAuth($this->user, $this->pass)
+        [
+            'access_token' => $token,
+            'expires_in' => $expires_in,
+        ] = Http::withBasicAuth($this->user, $this->pass)
             ->post($this->url . 'token', [
                 'grant_type' => 'client_credentials'
-            ])->json()['access_token'];
+            ])
+            ->json();
+
+        $meta = [
+            'expires_at' => now()->addSeconds($expires_in),
+        ];
+
+        return Config::updateOrCreate(['name' => 'wildjar_token'], [
+            'value' => $token,
+            'meta' => $meta,
+        ]);
     }
 
     /**
