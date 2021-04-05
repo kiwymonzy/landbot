@@ -71,7 +71,7 @@ class WildJar
     {
         $token = Config::firstWhere('name', 'wildjar_token');
 
-        if (is_null($token) || now()->isAfter(Carbon::parse($token['meta']['expires_at']))) {
+        if (is_null($token) || now()->isAfter(Carbon::parse($token->meta->expires_at))) {
             $token = $this->authenticate();
         }
 
