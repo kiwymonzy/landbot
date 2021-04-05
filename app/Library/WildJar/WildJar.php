@@ -70,7 +70,7 @@ class WildJar
     public function init()
     {
         $token = Config::firstWhere('name', 'wildjar_token');
-        $expiration = Carbon::parse($token->meta->expires_at);
+        $expiration = Carbon::parse($token['meta']['expires_at']);
 
         if (is_null($token) || now()->isAfter($expiration)) {
             $token = $this->authenticate();
