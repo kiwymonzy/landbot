@@ -113,11 +113,6 @@ class NotifyEnquiries extends Command
                 'value' => $this->currentTime->format('G:00'),
             ],
         ])['sales_accounts'];
-        $accounts = collect([
-            [
-                'id' => 9001576460,
-            ],
-        ]);
 
         // Process
         $accounts->each(function($acc) {
