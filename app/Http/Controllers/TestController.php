@@ -13,8 +13,8 @@ class TestController extends Controller
         ];
 
         $dates = [
-            'from' => now()->subMonth()->startOfMonth()->format('Y-m-d'),
-            'to' => now()->subMonth()->endOfMonth()->format('Y-m-d'),
+            'from' => now()->subMonths(1)->startOfMonth()->format('Y-m-d'),
+            'to' => now()->subMonths(1)->endOfMonth()->format('Y-m-d'),
         ];
 
         $spend = $this->fetchStats($ids, $dates);
@@ -29,7 +29,7 @@ class TestController extends Controller
                 ->with($id)
                 ->reports($dates['from'], $dates['to'])
                 ->getAccountReport();
-            dd($service);
+            dd($service->sum('cost'));
         }
     }
 }

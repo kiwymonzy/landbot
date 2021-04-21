@@ -9,11 +9,14 @@ use App\Library\GoogleAds\GoogleAds;
 use App\Library\LandBot\LandBot;
 use App\Library\WildJar\WildJar;
 use ErrorException;
+use Google\ApiCore\ApiException;
+use Google\ApiCore\ValidationException;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use LaravelAds\LaravelAds;
 
 class NotifyEnquiries extends Command
 {
@@ -110,6 +113,11 @@ class NotifyEnquiries extends Command
                 'value' => $this->currentTime->format('G:00'),
             ],
         ])['sales_accounts'];
+        $accounts = collect([
+            [
+                'id' => 9001576460,
+            ],
+        ]);
 
         // Process
         $accounts->each(function($acc) {
@@ -122,6 +130,7 @@ class NotifyEnquiries extends Command
                     'custom_field' => [
                         'cf_wa_number' => $freshWaNumber,
                         'cf_adwords_ids' => $freshAdwordsIds,
+                        'cf_bing_ads_ids' => $freshBingAdsIds,
                         'cf_wildjar_id' => $freshWildjarId,
                     ]
                 ]
@@ -139,23 +148,43 @@ class NotifyEnquiries extends Command
             ] = $customer;
 
             // Retrieve spending and calls
-            $spending = $this->fetchSpending($freshAdwordsIds);
-            $calls = $this->fetchCalls($freshWildjarId);
+            [
+                'google' => $googleSpend,
+                'bing' => $bingSpend,
+            ] = $this->fetchSpend($freshAdwordsIds, $freshBingAdsIds);
+            $googleSpendFormatted = currencyFormat($googleSpend);
+            $bingSpendFormatted = currencyFormat($bingSpend);
+            [
+                'google' => $googleCalls,
+                'bing' => $bingCalls,
+            ] = $this->fetchCalls($freshWildjarId);
 
             // Calculate cost per enquiry
-            $cpe = $spending / ($calls ? $calls : 1);
+            $googleCpe = is_null($googleSpend)
+                ? $googleSpend
+                : $this->calcCpe($googleSpend, $googleCalls);
+            $bingCpe = is_null($bingSpend)
+                ? $bingSpend
+                : $this->calcCpe($bingSpend, $bingCalls);
+
+            // Formatted result
+            $googleRes = is_null($googleCpe)
+                ? 'Not Active'
+                : "Cost: {$googleSpendFormatted}, Leads: {$googleCalls}, Cost Per Lead: {$googleCpe}";
+            $bingRes = is_null($bingCpe)
+                ? 'Not Active'
+                : "Cost: {$bingSpendFormatted}, Leads: {$bingCalls}, Cost Per Lead: {$bingCpe}";
 
             // Send template to customer
             $templateParams = [
                 $name,
                 $this->formattedTime,
-                currencyFormat($spending),
-                (string) $calls,
-                currencyFormat($cpe),
+                $googleRes,
+                $bingRes,
             ];
 
             $res = $this->landbotClient->sendTemplate($landbotId, [
-                'template_id' => 1060, //! Change template id if neccessary
+                'template_id' => 1355, //! Change template id if neccessary
                 'template_params' => $templateParams,
                 'template_language' => 'en',
             ]);
@@ -176,11 +205,28 @@ class NotifyEnquiries extends Command
     /**
      *
      * @param string $adwordsIds
+     * @param string $bingIds
+     * @return mixed
+     */
+    private function fetchSpend($adwordsIds, $bingIds)
+    {
+        return [
+            'google' => $this->fetchGoogleSpend($adwordsIds),
+            'bing' => $this->fetchBingSpend($bingIds),
+        ];
+    }
+
+    /**
+     * Fetch google ads spend
+     *
+     * @param string $adwordsIds
      * @return int
      */
-    private function fetchSpending($adwordsIds)
+    private function fetchGoogleSpend($adwordsIds)
     {
         $ids = $this->parseAdWordsIds($adwordsIds);
+
+        if ($ids->isEmpty()) return null;
 
         $date = 'TODAY';
         $query = 'SELECT metrics.cost_micros FROM customer WHERE segments.date DURING ' . $date;
@@ -199,6 +245,30 @@ class NotifyEnquiries extends Command
         return $result->sum();
     }
 
+    private function fetchBingSpend($bingIds)
+    {
+        $ids = $this->parseBingIds($bingIds);
+
+        if ($ids->isEmpty()) return null;
+
+        $dates = [
+            'from' => $this->currentTime->copy()->startOfDay()->format('Y-m-d'),
+            'to' => $this->currentTime->copy()->endOfDay()->format('Y-m-d'),
+        ];
+
+        $spend = 0;
+
+        foreach ($ids as $id) {
+            $report = LaravelAds::bingAds()
+                ->with($id)
+                ->reports($dates['from'], $dates['to'])
+                ->getAccountReport();
+            $spend += $report->sum('cost');
+        }
+
+        return $spend;
+    }
+
     /**
      * Fetch number of calls
      *
@@ -211,20 +281,21 @@ class NotifyEnquiries extends Command
 
         $data = [
             'account' => $ids->join(','),
-            'datefrom' => today()->startOfDay()->format('Y-m-d\TH:i:s'),
-            'dateto' => today()->endOfDay()->format('Y-m-d\TH:i:s'),
-            'timezone' => 'Australia/Sydney',
+            'datefrom' => $this->currentTime->copy()->startOfDay()->format('Y-m-d\TH:i:s'),
+            'dateto' => $this->currentTime->copy()->endOfDay()->format('Y-m-d\TH:i:s'),
+            'timezone' => 'Asia/Jakarta',
         ];
 
-        [
-            'summary' => [
-                'answeredTot' => $answered,
-                'missedTot' => $missed,
-                'abandonedTot' => $abandoned,
-            ]
-        ] = $this->wildjarClient->summary()->filter($data);
+        $calls = $this->wildjarClient
+            ->call()
+            ->filter($data)
+            ->groupBy('web.source')
+            ->map(fn ($item) => $item->count());
 
-        return $answered + $missed + $abandoned;
+        return [
+            'google' => $calls['google'] ?? 0,
+            'bing' => $calls['bing'] ?? 0,
+        ];
     }
 
     /**
@@ -235,7 +306,18 @@ class NotifyEnquiries extends Command
      */
     private function parseAdWordsIds($adwordsIds)
     {
-        return Str::of($adwordsIds)->replace('-', '')->explode("\n");
+        return Str::of($adwordsIds)->replace('-', '')->explode("\n")->filter();
+    }
+
+    /**
+     * Parse bing ids
+     *
+     * @param string $bingIds
+     * @return Collection
+     */
+    private function parseBingIds($bingIds)
+    {
+        return Str::of($bingIds)->explode("\n")->filter();
     }
 
     /**
@@ -257,5 +339,17 @@ class NotifyEnquiries extends Command
         })->pluck('id');
 
         return $allAccountIds->push($wildjarId);
+    }
+
+    /**
+     * Calculate cost per enquiry
+     *
+     * @param int $spending
+     * @param int $calls
+     * @return string
+     */
+    private function calcCpe($spending, $calls)
+    {
+        return currencyFormat($spending / ($calls ?: 1));
     }
 }
