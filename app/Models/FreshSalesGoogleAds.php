@@ -10,6 +10,9 @@ class FreshSalesGoogleAds extends Model
 
     protected $fillable = [
         'id',
-        'code',
+        'account_name',
+        'account_manager',
+        'industry',
+        'mcc_id',
     ];
 }

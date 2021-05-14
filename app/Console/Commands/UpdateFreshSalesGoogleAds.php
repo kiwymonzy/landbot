@@ -66,13 +66,19 @@ class UpdateFreshSalesGoogleAds extends Command
                 $googleAdsIds = $account['custom_field']['cf_adwords_ids'];
                 if (is_null($googleAdsIds)) {
                     FreshSalesGoogleAds::firstOrCreate([
-                        'code' => "{$name}/{$owner}/{$industry}/"
+                        'account_name' => $name,
+                        'account_manager' => $owner,
+                        'industry' => $industry,
+                        'mcc_id' => null,
                     ]);
                 } else {
                     $googleAdsIds = Str::of($googleAdsIds)->replace('-', '')->explode("\n");
                     foreach ($googleAdsIds as $googleAdsId) {
                         FreshSalesGoogleAds::firstOrCreate([
-                            'code' => "{$name}/{$owner}/{$industry}/{$googleAdsId}"
+                            'account_name' => $name,
+                            'account_manager' => $owner,
+                            'industry' => $industry,
+                            'mcc_id' => $googleAdsId,
                         ]);
                     }
                 }

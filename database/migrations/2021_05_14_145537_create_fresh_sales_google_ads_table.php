@@ -15,7 +15,10 @@ class CreateFreshSalesGoogleAdsTable extends Migration
     {
         Schema::create('freshgoogleadslink', function (Blueprint $table) {
             $table->id();
-            $table->string('code');
+            $table->string('account_name');
+            $table->string('account_manager');
+            $table->string('industry')->nullable();
+            $table->integer('mcc_id')->nullable();
             $table->timestamps();
         });
     }
