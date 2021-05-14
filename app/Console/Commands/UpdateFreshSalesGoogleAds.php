@@ -61,7 +61,7 @@ class UpdateFreshSalesGoogleAds extends Command
             foreach ($search['sales_accounts'] as $account) {
                 $name = $account['name'];
                 $owner = $owners[$account['owner_id']];
-                $industry = $industries[$account['industry_type_id']];
+                $industry = $industries[$account['industry_type_id']] ?? '';
 
                 $googleAdsIds = $account['custom_field']['cf_adwords_ids'];
                 if (is_null($googleAdsIds)) {
