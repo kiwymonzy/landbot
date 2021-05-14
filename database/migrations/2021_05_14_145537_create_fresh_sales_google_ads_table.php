@@ -18,7 +18,7 @@ class CreateFreshSalesGoogleAdsTable extends Migration
             $table->string('account_name');
             $table->string('account_manager');
             $table->string('industry')->nullable();
-            $table->integer('mcc_id')->nullable();
+            $table->unsignedBigInteger('mcc_id')->nullable();
             $table->timestamps();
         });
     }
