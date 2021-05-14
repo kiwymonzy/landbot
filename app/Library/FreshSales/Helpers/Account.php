@@ -22,6 +22,11 @@ class Account
         return collect($this->client->post('filtered_search/sales_account', $body))->recursive();
     }
 
+    public function index($params = [])
+    {
+        return collect($this->client->get("sales_accounts/view/9000586651", $params))->recursive();
+    }
+
     /**
      * Get account by id
      *
