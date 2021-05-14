@@ -77,6 +77,7 @@ class UpdateFreshSalesGoogleAds extends Command
                     }
                 }
             }
+            dump("{$page}/{$totalPages}");
             $page += 1;
         }
 
