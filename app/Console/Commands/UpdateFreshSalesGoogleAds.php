@@ -77,11 +77,8 @@ class UpdateFreshSalesGoogleAds extends Command
                     }
                 }
             }
-            break;
             $page += 1;
         }
-
-        // dd($initialSearch['users']);
 
         return 0;
     }
