@@ -78,7 +78,7 @@ class UpdateFreshSalesGoogleAds extends Command
                             'account_name' => $name,
                             'account_manager' => $owner,
                             'industry' => $industry,
-                            'mcc_id' => $googleAdsId,
+                            'mcc_id' => (int) $googleAdsId,
                         ]);
                     }
                 }
