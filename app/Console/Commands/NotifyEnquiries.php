@@ -2,8 +2,6 @@
 
 namespace App\Console\Commands;
 
-ini_set('memory_limit', '1024MB');
-
 use App\Library\FreshSales\FreshSales;
 use App\Library\GoogleAds\GoogleAds;
 use App\Library\LandBot\LandBot;
