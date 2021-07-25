@@ -24,7 +24,7 @@ Route::post('statistics', 'StatisticsController@statistics');
 Route::post('spendings', 'GoogleAds\SpendingController@spendings');
 Route::post('billing', 'GoogleAds\BillingController@billing');
 Route::post('accounts', 'GoogleAds\AccountController@accounts');
-Route::post('active-campaigns', 'GoogleAds\MutationController@activeCampaigns');
+Route::post('has-active-campaigns', 'GoogleAds\MutationController@hasActiveCampaigns');
 
 // Mutations
 Route::post('change-budget', 'GoogleAds\BudgetController@changeBudget');

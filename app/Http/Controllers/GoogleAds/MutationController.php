@@ -61,14 +61,16 @@ class MutationController extends BaseController
     }
 
     /**
-     * Gets a list of campaigns with the corresponding budgets
+     * Checks whether a user has any active campaigns
      *
-     * Budgets that have a value of 1 are considered paused and thus are not displayed
+     * NOTE:
+     * - Campaigns with a budget of 1 is considered inactive
+     * - Video campaigns are not counted
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function activeCampaigns(Request $request)
+    public function hasActiveCampaigns(Request $request)
     {
         $account = $this->fetchAccount($request->phone)['sales_account'];
 
@@ -78,9 +80,7 @@ class MutationController extends BaseController
         $campaigns = $this->fetchActiveCampaigns($account);
 
         $res = [
-            'name' => $account['name'],
-            'current_budget' => priceFormat($campaigns->sum('budget')),
-            'campaigns' => $this->formatCampaigns($campaigns),
+            'hasActiveCampaigns' => $campaigns->isNotEmpty(),
         ];
 
         return $this->sendResponse('', $res);
@@ -135,10 +135,8 @@ class MutationController extends BaseController
          */
         $blackListCampaignTypes = collect([6]);
         $campaignType = $row->getCampaign()->getAdvertisingChannelType();
-        if ($blackListCampaignTypes->contains($campaignType)) {
-            return false;
-        }
-        return true;
+
+        return !$blackListCampaignTypes->contains($campaignType);
     }
 
     /**
