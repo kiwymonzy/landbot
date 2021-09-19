@@ -3,7 +3,7 @@
 namespace App\Library\GoogleAds;
 
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V8\GoogleAdsClientBuilder;
 
 class GoogleAds
 {
@@ -16,7 +16,7 @@ class GoogleAds
             ->fromFile(config_path('google-ads.ini'))
             ->build();
 
-        $this->client = (new GoogleAdsClientBuilder)
+        $this->client = (new GoogleAdsClientBuilder())
             ->fromFile(config_path('google-ads.ini'))
             ->withOAuth2Credential($this->oauth)
             ->build();
@@ -26,7 +26,7 @@ class GoogleAds
     /**
      * Get GoogleAds client
      *
-     * @return \Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient
+     * @return \Google\Ads\GoogleAds\Lib\V8\GoogleAdsClient
      */
     public function client()
     {

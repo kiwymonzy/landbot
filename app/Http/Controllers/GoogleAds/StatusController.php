@@ -2,17 +2,10 @@
 
 namespace App\Http\Controllers\GoogleAds;
 
-use App\Jobs\MutateCampaignBudget;
 use App\Models\Client;
 use App\Models\StatusMutation;
 use Carbon\Carbon;
-use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V3\ResourceNames;
-use Google\Ads\GoogleAds\V3\Enums\CampaignStatusEnum\CampaignStatus;
-use Google\Ads\GoogleAds\V3\Resources\Campaign;
-use Google\Ads\GoogleAds\V3\Services\CampaignOperation;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class StatusController extends MutationController
 {

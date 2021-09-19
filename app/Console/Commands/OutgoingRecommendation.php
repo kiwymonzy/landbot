@@ -10,11 +10,7 @@ use App\Library\WildJar\WildJar;
 use App\Models\Client;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
-use Exception;
-use Google\ApiCore\ApiException;
-use Google\ApiCore\ValidationException;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class OutgoingRecommendation extends Command

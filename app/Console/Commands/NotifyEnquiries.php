@@ -7,8 +7,6 @@ use App\Library\GoogleAds\GoogleAds;
 use App\Library\LandBot\LandBot;
 use App\Library\WildJar\WildJar;
 use ErrorException;
-use Google\ApiCore\ApiException;
-use Google\ApiCore\ValidationException;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -43,7 +41,7 @@ class NotifyEnquiries extends Command
     private $landbotClient;
 
     /**
-     * @var \Google\Ads\GoogleAds\V6\Services\GoogleAdsServiceClient
+     * @var \Google\Ads\GoogleAds\V8\Services\GoogleAdsServiceClient
      */
     private $adsClient;
 
