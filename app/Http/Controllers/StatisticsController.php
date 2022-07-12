@@ -19,7 +19,7 @@ class StatisticsController extends Controller
     protected $wildJar;
 
     /**
-     * @var \Google\Ads\GoogleAds\Lib\V10\GoogleAdsClient
+     * @var \Google\Ads\GoogleAds\Lib\V11\GoogleAdsClient
      */
     protected $adsClient;
 

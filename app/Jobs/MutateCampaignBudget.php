@@ -4,9 +4,9 @@ namespace App\Jobs;
 
 use App\Library\GoogleAds\GoogleAds;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V10\ResourceNames;
-use Google\Ads\GoogleAds\V10\Resources\CampaignBudget;
-use Google\Ads\GoogleAds\V10\Services\CampaignBudgetOperation;
+use Google\Ads\GoogleAds\Util\V11\ResourceNames;
+use Google\Ads\GoogleAds\V11\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V11\Services\CampaignBudgetOperation;
 use Google\ApiCore\ApiException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

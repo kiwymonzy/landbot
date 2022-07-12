@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "32f7c420b8ae36ae6a325e18d9b83567",
+    "content-hash": "4d56a6415bc3be57d8c7180214fd24e4",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -873,23 +873,23 @@
         },
         {
             "name": "googleads/google-ads-php",
-            "version": "v14.0.0",
+            "version": "v15.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleads/google-ads-php.git",
-                "reference": "c6d3ab04960ec97d00d7ab19f6ac6be176092925"
+                "reference": "986e0ead76e9d73950f5689474768497a501f592"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/c6d3ab04960ec97d00d7ab19f6ac6be176092925",
-                "reference": "c6d3ab04960ec97d00d7ab19f6ac6be176092925",
+                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/986e0ead76e9d73950f5689474768497a501f592",
+                "reference": "986e0ead76e9d73950f5689474768497a501f592",
                 "shasum": ""
             },
             "require": {
                 "google/gax": "^1.7.0",
                 "google/protobuf": "^3.19.4",
                 "grpc/grpc": "^1.36.0",
-                "monolog/monolog": "^1.26 || ^2.0",
+                "monolog/monolog": "^2.0 || ^3.0",
                 "php": ">=7.4"
             },
             "require-dev": {
@@ -930,9 +930,9 @@
             "homepage": "https://github.com/googleads/google-ads-php",
             "support": {
                 "issues": "https://github.com/googleads/google-ads-php/issues",
-                "source": "https://github.com/googleads/google-ads-php/tree/v14.0.0"
+                "source": "https://github.com/googleads/google-ads-php/tree/v15.1.0"
             },
-            "time": "2022-02-15T07:07:11+00:00"
+            "time": "2022-06-16T17:07:10+00:00"
         },
         {
             "name": "googleads/googleads-php-lib",

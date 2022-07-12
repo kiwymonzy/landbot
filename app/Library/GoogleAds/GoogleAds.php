@@ -3,7 +3,7 @@
 namespace App\Library\GoogleAds;
 
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V10\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V11\GoogleAdsClientBuilder;
 
 class GoogleAds
 {
@@ -26,7 +26,7 @@ class GoogleAds
     /**
      * Get GoogleAds client
      *
-     * @return \Google\Ads\GoogleAds\Lib\V10\GoogleAdsClient
+     * @return \Google\Ads\GoogleAds\Lib\V11\GoogleAdsClient
      */
     public function client()
     {
