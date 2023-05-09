@@ -41,7 +41,7 @@ class NotifyEnquiries extends Command
     private $landbotClient;
 
     /**
-     * @var \Google\Ads\GoogleAds\V11\Services\GoogleAdsServiceClient
+     * @var \Google\Ads\GoogleAds\V13\Services\GoogleAdsServiceClient
      */
     private $adsClient;
 

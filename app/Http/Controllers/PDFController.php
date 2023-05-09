@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Library\FreshSales\FreshSales;
 use App\Library\GoogleAds\GoogleAds;
-use Google\Ads\GoogleAds\V11\Enums\AdGroupTypeEnum\AdGroupType;
-use Google\Ads\GoogleAds\V11\Enums\ExtensionTypeEnum\ExtensionType;
-use Google\Ads\GoogleAds\V11\Enums\FeedItemTargetDeviceEnum\FeedItemTargetDevice;
-use Google\Ads\GoogleAds\V11\Resources\ExtensionFeedItem;
-use Google\Ads\GoogleAds\V11\Services\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V13\Enums\AdGroupTypeEnum\AdGroupType;
+use Google\Ads\GoogleAds\V13\Enums\ExtensionTypeEnum\ExtensionType;
+use Google\Ads\GoogleAds\V13\Enums\FeedItemTargetDeviceEnum\FeedItemTargetDevice;
+use Google\Ads\GoogleAds\V13\Resources\ExtensionFeedItem;
+use Google\Ads\GoogleAds\V13\Services\GoogleAdsServiceClient;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Mpdf\Config\ConfigVariables;
