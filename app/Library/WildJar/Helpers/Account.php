@@ -36,6 +36,6 @@ class Account
 
     public function all()
     {
-        return collect($this->client->get('account/dash/FORCE')['data'])->recursive();
+        return collect($this->client->get('account/dash')['data'])->recursive();
     }
 }

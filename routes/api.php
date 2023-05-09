@@ -1,7 +1,5 @@
 <?php
 
-use App\Jobs\SendRecommendation;
-use App\Library\LandBot\LandBot;
 use Illuminate\Support\Facades\Route;
 
 /*
