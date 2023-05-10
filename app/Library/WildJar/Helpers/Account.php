@@ -27,15 +27,25 @@ class Account
      * Filter all accounts
      *
      * @param array $params
-     * @return void
+     * @return \Illuminate\Support\Collection
      */
     public function filter($params = [])
     {
         return collect($this->client->get('account', $params)['data'])->recursive();
     }
 
-    public function all()
+    /**
+     * Get account by id
+     *
+     * @param string $id
+     * @return \Illuminate\Support\Collection
+     */
+    public function show($id)
     {
-        return collect($this->client->get('account/dash')['data'])->recursive();
+        $response = $this->client->get('account/' . $id, [
+            'show' => 'links',
+        ]);
+
+        return collect($response['data'])->recursive();
     }
 }

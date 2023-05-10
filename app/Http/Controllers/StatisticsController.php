@@ -214,29 +214,23 @@ class StatisticsController extends Controller
     /**
      * Parse WildJar sub accounts from ID
      *
-     * @param \Illuminate\Support\Collection $account
+     * @param string $account
      * @return \Illuminate\Support\Collection
      */
     private function fetchWJSubAccounts($account)
     {
-        $allAccounts = $this->wildJar->account()->all();
+        $accountDetails = $this->wildJar->account()->show($account);
 
-        $allAccountIds = $allAccounts->filter(function ($q) use ($account) {
-            try {
-                return $q['father'] == $account;
-            } catch(ErrorException $e) {
-                return false;
-            }
-        })->pluck('id');
+        $childAccountIds = $accountDetails['children']->pluck('account');
 
-        return $allAccountIds->push($account);
+        return $childAccountIds->push($account);
     }
 
     /**
      * Parse WildJar ID from FreshSales accounts
      *
      * @param \Illuminate\Support\Collection $account
-     * @return array
+     * @return string
      */
     private function parseWildJarId($account)
     {

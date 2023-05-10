@@ -33,7 +33,6 @@ class OutgoingRecommendation extends Command
     private $landBotClient;
     private $googleAdsClient;
     private $wildJarClient;
-    private $wildJarAccounts;
 
     /**
      * Create a new command instance.
@@ -282,16 +281,11 @@ class OutgoingRecommendation extends Command
      */
     private function fetchWJSubAccounts($account)
     {
-        if(!isset($wildJarAccounts))
-            $this->wildJarAccounts = $this->wildJarClient->account()->all();
+        $accountDetails = $this->wildJarClient->account()->show($account);
 
-        $allAccountIds = $this->wildJarAccounts
-            ->filter(function ($q) use ($account) {
-                return $q['father'] == $account;
-            })
-            ->pluck('id');
+        $childAccountIds = $accountDetails['children']->pluck('account');
 
-        return $allAccountIds->push($account);
+        return $childAccountIds->push($account);
     }
 
     /**

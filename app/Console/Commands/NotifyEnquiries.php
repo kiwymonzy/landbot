@@ -319,17 +319,11 @@ class NotifyEnquiries extends Command
      */
     private function parseWildJarId($wildjarId)
     {
-        $allAccounts = $this->wildjarClient->account()->all();
+        $accountDetails = $this->wildjarClient->account()->show($wildjarId);
 
-        $allAccountIds = $allAccounts->filter(function ($q) use ($wildjarId) {
-            try {
-                return $q['father'] == $wildjarId;
-            } catch (ErrorException $e) {
-                return false;
-            }
-        })->pluck('id');
+        $childAccountIds = $accountDetails['children']->pluck('account');
 
-        return $allAccountIds->push($wildjarId);
+        return $childAccountIds->push($wildjarId);
     }
 
     /**
