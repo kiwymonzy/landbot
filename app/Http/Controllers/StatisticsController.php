@@ -221,7 +221,11 @@ class StatisticsController extends Controller
     {
         $accountDetails = $this->wildJar->account()->show($account);
 
-        $childAccountIds = $accountDetails['children']->pluck('account');
+        $childAccountIds = $accountDetails['children'];
+
+        if (!$childAccountIds) {
+            return collect([$account]);
+        }
 
         return $childAccountIds->push($account);
     }
