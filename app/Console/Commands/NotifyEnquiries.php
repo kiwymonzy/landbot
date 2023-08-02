@@ -10,6 +10,7 @@ use ErrorException;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use LaravelAds\LaravelAds;
@@ -61,6 +62,11 @@ class NotifyEnquiries extends Command
     private $formattedTime;
 
     /**
+     * @var string
+     */
+    private $formattedDateTime;
+
+    /**
      * @var bool
      */
     private $hasErrors;
@@ -81,6 +87,7 @@ class NotifyEnquiries extends Command
         $this->wildjarClient = new WildJar;
         $this->currentTime = now();
         $this->formattedTime = $this->currentTime->format('H:i');
+        $this->formattedDateTime = $this->currentTime->format('d M y, H:i');
         $this->hasErrors = false;
     }
 
@@ -128,15 +135,9 @@ class NotifyEnquiries extends Command
             ] = $this->freshClient->get($freshId);
             $freshWaNumber = preg_replace('/[^0-9\-]/', '', $freshWaNumber);
 
-            // Check if customer is opted in
-            $customers = $this->landbotClient->searchBy('phone', $freshWaNumber)['customers'];
-            $customer = $customers->firstWhere('opt_in', true);
-            if (!$customer) return;
-
             [
-                'id' => $landbotId,
-                'name' => $name,
-            ] = $customer;
+                'name' => $name
+            ] = $acc;
 
             // Retrieve spending and calls
             [
@@ -166,28 +167,22 @@ class NotifyEnquiries extends Command
                 ? 'Not Active'
                 : "Cost: {$bingSpendFormatted}, Leads: {$bingCalls}, Cost Per Lead: {$bingCpe}";
 
-            // Send template to customer
-            $templateParams = [
-                $name,
-                $this->formattedTime,
-                $googleRes,
-                $bingRes,
-            ];
-
-            $res = $this->landbotClient->sendTemplate($landbotId, [
-                'template_id' => 1355, //! Change template id if neccessary
-                'template_params' => $templateParams,
-                'template_language' => 'en',
+            // Call Zapier
+            Http::post('https://hooks.zapier.com/hooks/catch/4537599/31wpt10/', [
+                'name' => $name,
+                'wa_number' => $freshWaNumber,
+                'datetime' => $this->formattedDateTime,
+                'google' => [
+                    'spend' => $googleSpendFormatted,
+                    'calls' => $googleCalls,
+                    'cpe' => $googleCpe,
+                ],
+                'bing' => [
+                    'spend' => $bingSpendFormatted,
+                    'calls' => $bingCalls,
+                    'cpe' => $bingCpe,
+                ],
             ]);
-
-            if (isset($res['errors'])) {
-                Log::error('Could not send template to customer', [
-                    'id' => $landbotId,
-                    'details' => $templateParams,
-                    'response' => $res->toArray(),
-                ]);
-                $this->hasErrors = true;
-            }
         });
 
         return (int) $this->hasErrors;
@@ -321,7 +316,9 @@ class NotifyEnquiries extends Command
     {
         $accountDetails = $this->wildjarClient->account()->show($wildjarId);
 
-        $childAccountIds = $accountDetails['children']->pluck('account');
+        $childAccountIds = $accountDetails['children'];
+
+        if (!$childAccountIds) return collect([$wildjarId]);
 
         return $childAccountIds->push($wildjarId);
     }
