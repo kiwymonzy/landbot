@@ -177,11 +177,11 @@ class NotifyEnquiries extends Command
                     'calls' => $googleCalls,
                     'cpe' => $googleCpe,
                 ],
-                'bing' => [
-                    'spend' => $bingSpendFormatted,
-                    'calls' => $bingCalls,
-                    'cpe' => $bingCpe,
-                ],
+                // 'bing' => [
+                //     'spend' => $bingSpendFormatted,
+                //     'calls' => $bingCalls,
+                //     'cpe' => $bingCpe,
+                // ],
             ]);
         });
 
