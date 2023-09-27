@@ -118,71 +118,77 @@ class NotifyEnquiries extends Command
         ])['sales_accounts'];
 
         // Process
-        $accounts->each(function($acc) {
-            // Get full fresh account
-            [
-                'id' => $freshId,
-            ] = $acc;
-            [
-                'sales_account' => [
-                    'custom_field' => [
-                        'cf_wa_number' => $freshWaNumber,
-                        'cf_adwords_ids' => $freshAdwordsIds,
-                        'cf_bing_ads_ids' => $freshBingAdsIds,
-                        'cf_wildjar_id' => $freshWildjarId,
+        $accounts->each(function ($acc) {
+            try {
+
+                // Get full fresh account
+                [
+                    'id' => $freshId,
+                ] = $acc;
+                [
+                    'sales_account' => [
+                        'custom_field' => [
+                            'cf_wa_number' => $freshWaNumber,
+                            'cf_adwords_ids' => $freshAdwordsIds,
+                            'cf_bing_ads_ids' => $freshBingAdsIds,
+                            'cf_wildjar_id' => $freshWildjarId,
+                        ]
                     ]
-                ]
-            ] = $this->freshClient->get($freshId);
-            $freshWaNumber = preg_replace('/[^0-9\-]/', '', $freshWaNumber);
+                ] = $this->freshClient->get($freshId);
 
-            [
-                'name' => $name
-            ] = $acc;
+                $freshWaNumber = preg_replace('/[^0-9\-]/', '', $freshWaNumber);
 
-            // Retrieve spending and calls
-            [
-                'google' => $googleSpend,
-                'bing' => $bingSpend,
-            ] = $this->fetchSpend($freshAdwordsIds, $freshBingAdsIds);
-            $googleSpendFormatted = currencyFormat($googleSpend);
-            $bingSpendFormatted = currencyFormat($bingSpend);
-            [
-                'google' => $googleCalls,
-                'bing' => $bingCalls,
-            ] = $this->fetchCalls($freshWildjarId);
+                [
+                    'name' => $name
+                ] = $acc;
 
-            // Calculate cost per enquiry
-            $googleCpe = is_null($googleSpend)
-                ? $googleSpend
-                : $this->calcCpe($googleSpend, $googleCalls);
-            $bingCpe = is_null($bingSpend)
-                ? $bingSpend
-                : $this->calcCpe($bingSpend, $bingCalls);
+                // Retrieve spending and calls
+                [
+                    'google' => $googleSpend,
+                    'bing' => $bingSpend,
+                ] = $this->fetchSpend($freshAdwordsIds, $freshBingAdsIds);
+                $googleSpendFormatted = currencyFormat($googleSpend);
+                $bingSpendFormatted = currencyFormat($bingSpend);
+                [
+                    'google' => $googleCalls,
+                    'bing' => $bingCalls,
+                ] = $this->fetchCalls($freshWildjarId);
 
-            // Formatted result
-            $googleRes = is_null($googleCpe)
-                ? 'Not Active'
-                : "Cost: {$googleSpendFormatted}, Leads: {$googleCalls}, Cost Per Lead: {$googleCpe}";
-            $bingRes = is_null($bingCpe)
-                ? 'Not Active'
-                : "Cost: {$bingSpendFormatted}, Leads: {$bingCalls}, Cost Per Lead: {$bingCpe}";
+                // Calculate cost per enquiry
+                $googleCpe = is_null($googleSpend)
+                    ? $googleSpend
+                    : $this->calcCpe($googleSpend, $googleCalls);
+                $bingCpe = is_null($bingSpend)
+                    ? $bingSpend
+                    : $this->calcCpe($bingSpend, $bingCalls);
 
-            // Call Zapier
-            Http::post('https://hooks.zapier.com/hooks/catch/4537599/31wpt10/', [
-                'name' => $name,
-                'wa_number' => $freshWaNumber,
-                'datetime' => $this->formattedDateTime,
-                'google' => [
-                    'spend' => $googleSpendFormatted,
-                    'calls' => $googleCalls,
-                    'cpe' => $googleCpe,
-                ],
-                // 'bing' => [
-                //     'spend' => $bingSpendFormatted,
-                //     'calls' => $bingCalls,
-                //     'cpe' => $bingCpe,
-                // ],
-            ]);
+                // Formatted result
+                $googleRes = is_null($googleCpe)
+                    ? 'Not Active'
+                    : "Cost: {$googleSpendFormatted}, Leads: {$googleCalls}, Cost Per Lead: {$googleCpe}";
+                $bingRes = is_null($bingCpe)
+                    ? 'Not Active'
+                    : "Cost: {$bingSpendFormatted}, Leads: {$bingCalls}, Cost Per Lead: {$bingCpe}";
+
+                // Call Zapier
+                Http::post('https://hooks.zapier.com/hooks/catch/4537599/31wpt10/', [
+                    'name' => $name,
+                    'wa_number' => $freshWaNumber,
+                    'datetime' => $this->formattedDateTime,
+                    'google' => [
+                        'spend' => $googleSpendFormatted,
+                        'calls' => $googleCalls,
+                        'cpe' => $googleCpe,
+                    ],
+                    // 'bing' => [
+                    //     'spend' => $bingSpendFormatted,
+                    //     'calls' => $bingCalls,
+                    //     'cpe' => $bingCpe,
+                    // ],
+                ]);
+            } catch (\Exception $e) {
+                Log::error("An error occurred: " . $e->getMessage());
+            }
         });
 
         return (int) $this->hasErrors;
@@ -265,11 +271,14 @@ class NotifyEnquiries extends Command
     {
         $ids = $this->parseWildJarId($wildjarId);
 
+        $accountIds = array_filter($ids->pluck('account')->toArray());
+        $accountString = implode(',', $accountIds);
+
         $data = [
-            'account' => $ids->join(','),
+            'account' => $accountString,
             'datefrom' => $this->currentTime->copy()->startOfDay()->format('Y-m-d\TH:i:s'),
             'dateto' => $this->currentTime->copy()->endOfDay()->format('Y-m-d\TH:i:s'),
-            'timezone' => 'Asia/Jakarta',
+            'timezone' => 'Australia/Sydney',
         ];
 
         $calls = $this->wildjarClient
