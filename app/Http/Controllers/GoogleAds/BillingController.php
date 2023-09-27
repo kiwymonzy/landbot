@@ -9,7 +9,7 @@ class BillingController extends BaseController
 {
     public function billing(Request $request)
     {
-        $account = $this->fetchAccount($request->phone)['sales_account'];
+        $account = $this->fetchAccount($request->phone);
         $year = $request->year;
         $month = $request->month;
         $accountIndex = $request->account;

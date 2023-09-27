@@ -17,7 +17,7 @@ class StatusController extends MutationController
      */
     public function pause(Request $request)
     {
-        $account = $this->fetchAccount($request->phone)['sales_account'];
+        $account = $this->fetchAccount($request->phone);
 
         $campaigns = $this->fetchActiveCampaigns($account);
         $campaigns = $this->formatCampaigns($campaigns);

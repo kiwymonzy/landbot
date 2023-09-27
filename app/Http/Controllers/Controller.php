@@ -57,31 +57,29 @@ class Controller extends BaseController
         $fs = new FreshSales();
 
         // Search for query in accounts
-        $accounts = $fs->account()->search([
-            [
-                "attribute" => $field,
-                "operator" => "contains_any",
-                "value" => [$query],
-            ],
-        ]);
+        $search_params = array_merge([
+            'entities' => 'sales_account',
+            'q' => $query,
+            'f' => $field,
+        ], $account_params);
+        $response = $fs->account()->lookup($search_params);
 
-        $results = $accounts['sales_accounts'];
+        $accounts = $response['sales_accounts']['sales_accounts'];
 
         // Throw error when none found
-        if ($results->isEmpty()) {
+        if (count($accounts) == 0) {
             Log::error('Account not found', [
                 'query' => $query,
-                'search_results' => $accounts
+                'search_results' => $response
             ]);
 
             abort(404, 'Account not found');
         }
 
-        // Use first result as account
-        $account = $results[0];
-        $account = $fs->account()->get($account['id'], $account_params);
+        // Return first account
+        $account = $accounts[0];
 
-        $this->makeModel($account['sales_account']);
+        $this->makeModel($account);
         return $account;
     }
 

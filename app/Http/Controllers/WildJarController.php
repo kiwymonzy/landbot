@@ -31,7 +31,7 @@ class WildJarController extends Controller
 
     public function calls(Request $request)
     {
-        $fsAccount = $this->fetchAccount($request->phone)['sales_account'];
+        $fsAccount = $this->fetchAccount($request->phone);
 
         if (!$this->accountIsValid($fsAccount))
             abort(403, 'This feature is not enabled on your account');

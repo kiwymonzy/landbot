@@ -18,7 +18,7 @@ class BudgetController extends MutationController
      */
     public function changeBudget(Request $request)
     {
-        $account = $this->fetchAccount($request->phone)['sales_account'];
+        $account = $this->fetchAccount($request->phone);
 
         if (!$this->accountIsValid($account))
             abort(403, 'This feature is not enabled on your account');

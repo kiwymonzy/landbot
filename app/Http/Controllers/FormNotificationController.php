@@ -61,7 +61,7 @@ class FormNotificationController extends Controller
     {
         $domain = parse_url($origin)['host'];
 
-        $account = $this->fetchAccount($domain, [], 'cf_notification_domain')['sales_account'];
+        $account = $this->fetchAccount($domain, [], 'cf_notification_domain');
 
         $domainString = $account['custom_field']['cf_notification_domain'];
         $domains = collect(explode(',', $domainString));

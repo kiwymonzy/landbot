@@ -19,7 +19,9 @@ class Account
             "filter_rule" => $query
         ], $options);
 
-        return collect($this->client->post('filtered_search/sales_account', $body))->recursive();
+        $response = clock()->event('Search account')->run(fn() => $this->client->post('filtered_search/sales_account', $body));
+
+        return collect($response);
     }
 
     public function index($params = [])
@@ -35,6 +37,15 @@ class Account
      */
     public function get($id, $params = [])
     {
-        return collect($this->client->get("sales_accounts/$id", $params))->recursive();
+        $response = clock()->event('Get account')->run(fn() => $this->client->get("sales_accounts/$id", $params));
+
+        return collect($response)->recursive();
+    }
+
+    public function lookup($query)
+    {
+        $response = clock()->event('Lookup account')->run(fn() => $this->client->get("lookup", $query));
+
+        return collect($response)->recursive();
     }
 }

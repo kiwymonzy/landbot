@@ -8,7 +8,7 @@ class AccountController extends BaseController
 {
     public function accounts(Request $request)
     {
-        $account = $this->fetchAccount($request->phone)['sales_account'];
+        $account = $this->fetchAccount($request->phone);
 
         $ids = $this->parseAdWordsIds($account);
 

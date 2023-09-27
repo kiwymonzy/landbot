@@ -9,7 +9,7 @@ class FreshSales
 {
     private $url;
     private $client;
-    private $account;
+    private Account $account;
 
     public function __construct()
     {
@@ -19,7 +19,9 @@ class FreshSales
 
         $this->client = Http::withHeaders([
             'Authorization' => "Token token=$key"
-        ]);
+        ])
+        // ->withOptions(['debug' => true])
+        ;
         $this->url = $url;
 
         $this->account = new Account($this);

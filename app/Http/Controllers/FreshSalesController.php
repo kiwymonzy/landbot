@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Library\FreshSales\FreshSales;
 use Illuminate\Http\Request;
 
 class FreshSalesController extends Controller
@@ -9,13 +10,9 @@ class FreshSalesController extends Controller
     public function account(Request $request)
     {
         [
-            'users' => $manager,
-            'sales_account' => $account,
-        ] = $this->fetchAccount($request->phone, [
-            'include' => 'owner'
-        ]);
-
-        $manager = $manager[0];
+            'manager' => $manager,
+            'account' => $account,
+        ] = $this->fetchAccountAndManager($request->phone);
 
         $res = [
             'name' => $account['name'],
@@ -26,5 +23,27 @@ class FreshSalesController extends Controller
         ];
 
         return $this->sendResponse('Account found!', $res);
+    }
+
+    private function fetchAccountAndManager($phone)
+    {
+        // Create FreshSales client
+        $fs = new FreshSales();
+
+        // Search for query in accounts
+        $response = $fs->account()->lookup([
+            'entities' => 'sales_account',
+            'f' => 'cf_wa_number',
+            'q' => $phone,
+            'include' => 'owner',
+        ]);
+
+        if (count($response['sales_accounts']['sales_accounts']) == 0)
+            abort(404, 'Account not found');
+
+        return [
+            'manager' => $response['sales_accounts']['users'][0],
+            'account' => $response['sales_accounts']['sales_accounts'][0],
+        ];
     }
 }

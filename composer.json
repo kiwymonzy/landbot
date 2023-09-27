@@ -13,10 +13,12 @@
         "fruitcake/laravel-cors": "^1.0",
         "googleads/google-ads-php": "^19.1",
         "guzzlehttp/guzzle": "^6.3",
+        "itsgoingd/clockwork": "^5.1",
         "laravel/framework": "^7.0",
         "laravel/tinker": "^2.0",
         "mpdf/mpdf": "^8.0",
-        "tmarois/laravel-ads-sdk": "^1.2"
+        "tmarois/laravel-ads-sdk": "^1.2",
+        "vxm/laravel-async": "^2.2"
     },
     "require-dev": {
         "facade/ignition": "^2.0",

@@ -9,7 +9,9 @@ use App\Models\Statistic;
 use Carbon\Carbon;
 use ErrorException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use VXM\Async\AsyncFacade as Async;
 
 class StatisticsController extends Controller
 {
@@ -19,7 +21,7 @@ class StatisticsController extends Controller
     protected $wildJar;
 
     /**
-     * @var \Google\Ads\GoogleAds\Lib\V13\GoogleAdsClient
+     * @var \Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient
      */
     protected $adsClient;
 
@@ -31,15 +33,17 @@ class StatisticsController extends Controller
 
     public function statistics(Request $request)
     {
-        $fsAccount = $this->fetchAccount($request->phone)['sales_account'];
+        $fsAccount = clock()->event('Fetch Account')->run(function() use ($request) {
+            return $this->fetchAccount($request->phone);
+        });
 
         if (!$this->accountIsValid($fsAccount))
             abort(403, 'This feature is not enabled on your account');
 
         $dates = $this->dateMapper($request->date);
 
-        $calls = $this->getCalls($fsAccount, $dates);
-        $stats = $this->getStats($fsAccount, $dates);
+        $calls = clock()->event('Get Calls')->run(fn() => $this->getCalls($fsAccount, $dates));
+        $stats = clock()->event('Get Stats')->run(fn() => $this->getStats($fsAccount, $dates));
 
         $result = $stats + $calls;
         $result['calls'] = $this->calls($result);
@@ -109,8 +113,8 @@ class StatisticsController extends Controller
 
         return [
             'name' => $fsAccount['name'],
-            'spendings' => priceFormat($data['spendings']->sum()),
-            'clicks' => $data['clicks']->sum(),
+            'spendings' => priceFormat($data['spendings']),
+            'clicks' => $data['clicks'],
         ];
     }
 
@@ -128,25 +132,33 @@ class StatisticsController extends Controller
         $date = $dates['google'];
         $query = 'SELECT metrics.cost_micros, metrics.clicks FROM customer WHERE segments.date DURING ' . $date;
 
-        $result = collect([
-            'spendings' => collect(),
-            'clicks' => collect(),
-        ]);
+        // Parallelize search requests
+        foreach($accountIds as $id) {
+            Async::run(function() use ($serviceClient, $id, $query) {
+                $spend = 0;
+                $click = 0;
 
-        foreach ($accountIds as $id) {
-            $spend = 0;
-            $click = 0;
-            $stream = $serviceClient->search($id, $query);
-            foreach ($stream->iterateAllElements() as $row) {
-                $metrics = $row->getMetrics();
-                $spend += $metrics->getCostMicros();
-                $click += $metrics->getClicks();
-            }
-            $result['spendings']->push($spend / 1000000);
-            $result['clicks']->push($click);
+                $response = $serviceClient->search($id, $query);
+
+                foreach ($response->iterateAllElements() as $row) {
+                    $metrics = $row->getMetrics();
+                    $spend += $metrics->getCostMicros();
+                    $click += $metrics->getClicks();
+                }
+
+                return [
+                    'spend' => $spend / 1000000,
+                    'click' => $click,
+                ];
+            });
         }
 
-        return $result;
+        $result = collect(Async::wait());
+
+        return [
+            'spendings' => $result->pluck('spend')->sum(),
+            'clicks' => $result->pluck('click')->sum(),
+        ];
     }
 
     /**
